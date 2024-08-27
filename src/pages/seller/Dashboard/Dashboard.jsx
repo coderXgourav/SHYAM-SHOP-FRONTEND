@@ -1,7 +1,11 @@
 import React from "react";
+import SellerHeader from "../../../components/seller/SellerHeader";
+import SellerFooter from "../../../components/seller/SellerFooter";
+
 const Dashboard = () => {
   return (
     <>
+      <SellerHeader />
       <div className="page-wrapper">
         <div className="page-content">
           <div className="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
@@ -633,6 +637,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      <SellerFooter />
     </>
   );
 };
