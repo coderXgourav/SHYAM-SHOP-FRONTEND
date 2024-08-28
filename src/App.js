@@ -5,6 +5,7 @@ import AddProduct from "./pages/seller/Dashboard/Product/AddProduct";
 import ViewProducts from "./pages/seller/Dashboard/Product/ViewProducts";
 import Login from "./pages/seller/Login";
 import Signup from "./pages/seller/Signup";
+import "react-toastify/dist/ReactToastify.css";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 

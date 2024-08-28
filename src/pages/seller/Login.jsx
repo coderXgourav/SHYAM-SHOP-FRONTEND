@@ -1,4 +1,48 @@
+import { useState } from "react";
+import { sellerLogin } from "../../utils/seller/sellerAPI";
+import { toast, ToastContainer } from "react-toastify";
+
 const Login = () => {
+  const [btnStatus, setBtnStatus] = useState(false);
+  const isLogin = localStorage.getItem("sellerToken");
+  if (isLogin) {
+    window.location = "/seller/dashboard";
+  }
+  const [usernameEmail, setUsernameEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [rEmail, setRemail] = useState(false);
+  const [rPassword, setRpassword] = useState(false);
+
+  const sellerLoginHandler = async (event) => {
+    setBtnStatus(true);
+    event.preventDefault();
+    if (usernameEmail.length > 0) {
+      setRemail(false);
+    } else {
+      setRemail(true);
+    }
+    if (password.length > 0) {
+      setRpassword(false);
+    } else {
+      setRpassword(true);
+    }
+    if (!usernameEmail || !password) {
+      setBtnStatus(false);
+    } else {
+      const data = { usernameEmail, password };
+      const response = await sellerLogin(data);
+      setBtnStatus(false);
+      toast[response.icon](response.title);
+      console.log(response);
+      if (response.status) {
+        setTimeout(() => {
+          window.location = "/seller/dashboard";
+        }, 2000);
+      }
+    }
+  };
+
   return (
     <div className="wrapper">
       <div className="section-authentication-cover">
@@ -29,7 +73,11 @@ const Login = () => {
                       <p className="mb-0">Please log in to your account</p>
                     </div>
                     <div className="form-body">
-                      <form className="row g-3" id="formSubmit" action="#">
+                      <form
+                        className="row g-3"
+                        id="formSubmit"
+                        onSubmit={sellerLoginHandler}
+                      >
                         <input
                           type="hidden"
                           id="url"
@@ -52,7 +100,18 @@ const Login = () => {
                             className="form-control"
                             placeholder="jhon@example.com"
                             required=""
+                            onChange={(e) => {
+                              setUsernameEmail(e.target.value);
+                            }}
+                            value={usernameEmail}
                           />
+                          {rEmail ? (
+                            <label htmlFor="" className="errors">
+                              Email or Username Required
+                            </label>
+                          ) : (
+                            ""
+                          )}
                         </div>
                         <div className="col-12">
                           <label
@@ -69,6 +128,10 @@ const Login = () => {
                               required=""
                               minLength={4}
                               maxLength={30}
+                              onChange={(e) => {
+                                setPassword(e.target.value);
+                              }}
+                              value={password}
                             />
                             <a
                               href="javascript:;"
@@ -76,7 +139,14 @@ const Login = () => {
                             >
                               <i className="bx bx-hide" />
                             </a>
-                          </div>
+                          </div>{" "}
+                          {rPassword ? (
+                            <label htmlFor="" className="errors">
+                              Password Required
+                            </label>
+                          ) : (
+                            ""
+                          )}
                         </div>
                         <div className="col-md-6">
                           <div className="form-check form-switch">
@@ -94,7 +164,6 @@ const Login = () => {
                           </div>
                         </div>
                         <div className="col-md-6 text-end">
-                          {" "}
                           <a href="#">Forgot Password ?</a>
                         </div>
                         <div className="col-12">
@@ -103,28 +172,13 @@ const Login = () => {
                               type="submit"
                               className="btn btn-primary"
                               id="submitBtn"
+                              disabled={btnStatus}
                             >
                               Sign in
                             </button>
-                            <button
-                              className="btn btn-primary"
-                              type="button"
-                              disabled=""
-                              id="loadingBtn"
-                              style={{ display: "none" }}
-                            >
-                              {" "}
-                              <span
-                                className="spinner-border spinner-border-sm"
-                                role="status"
-                                aria-hidden="true"
-                              />
-                              <span className="visually-hidden">
-                                Loading...
-                              </span>
-                            </button>
                           </div>
                         </div>
+                        <ToastContainer />
                         <div className="col-12">
                           <div className="text-center">
                             <p className="mb-0">

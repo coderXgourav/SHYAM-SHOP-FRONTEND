@@ -1,7 +1,45 @@
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
+import React, { useEffect } from "react";
+import Quill from "quill";
+import { useState } from "react";
 
 const AddProduct = () => {
+  const [images, setImages] = useState([]);
+
+  const [title, setTitle] = useState("");
+  const [desc, setDesc] = useState("");
+  const [img, setImg] = useState("");
+  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [category, setCategory] = useState("");
+
+  const productAddHandler = async (event) => {
+    event.preventDefault();
+    if (!title || !price || !quantity || !category) {
+    }
+  };
+
+  // Handle file input change
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const imagePreviews = files.map((file) => URL.createObjectURL(file));
+
+    setImages((prevImages) => [...prevImages, ...imagePreviews]);
+
+    // Clean up object URLs to avoid memory leaks
+    files.forEach((file) => URL.revokeObjectURL(file));
+  };
+
+  // Handle image removal
+  const handleRemoveImage = (index) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+  useEffect(() => {
+    new Quill("#editor-container", {
+      theme: "snow",
+    });
+  }, []);
   return (
     <>
       <SellerHeader />
@@ -33,7 +71,7 @@ const AddProduct = () => {
             </div>
           </div>
 
-          <form action id="formSubmit">
+          <form id="formSubmit" onSubmit={productAddHandler}>
             <input type="hidden" id="url" defaultValue="/seller/add-product" />
             <input type="hidden" id="dataType" defaultValue="POST" />
             <div className="card">
@@ -58,18 +96,19 @@ const AddProduct = () => {
                             placeholder="Enter product title"
                             name="title"
                             required
+                            onChange={(e) => {
+                              setTitle(e.target.value);
+                            }}
+                            value={title}
                           />
                         </div>
                         <div className="mb-3">
                           <label htmlFor>Description</label>
                           <div>
-                            <textarea
-                              id="mytextarea"
-                              name="mytextarea"
-                              placeholder="Type product description"
-                              required
-                              defaultValue={""}
-                            />
+                            <div
+                              id="editor-container"
+                              style={{ height: "200px" }}
+                            ></div>
                           </div>
                         </div>
 
@@ -82,14 +121,47 @@ const AddProduct = () => {
                         <div className="mb-3 border border-3  rounded p-4">
                           <input
                             type="file"
-                            id="imageInput"
                             multiple
                             accept="image/*"
-                            name="image[]"
-                            required
+                            onChange={handleFileChange}
+                            style={{ marginBottom: "10px" }}
+                            required={true}
                           />
                         </div>
-                        <div id="imageContainer" />
+                        <div style={{ display: "flex", flexWrap: "wrap" }}>
+                          {images.map((image, index) => (
+                            <div
+                              key={index}
+                              style={{ position: "relative", margin: "5px" }}
+                            >
+                              <img
+                                src={image}
+                                alt={`Preview ${index}`}
+                                style={{
+                                  width: "100px",
+                                  height: "100px",
+                                  objectFit: "cover",
+                                }}
+                              />
+                              <button
+                                onClick={() => handleRemoveImage(index)}
+                                style={{
+                                  position: "absolute",
+                                  top: "0",
+                                  right: "0",
+                                  backgroundColor: "red",
+                                  color: "white",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  borderRadius: "0 0 0 5px",
+                                  padding: "5px",
+                                }}
+                              >
+                                X
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <div className="col-lg-4">
@@ -109,6 +181,10 @@ const AddProduct = () => {
                               placeholder="Product Price "
                               name="quantity"
                               required
+                              onChange={(e) => {
+                                setPrice(e.target.value);
+                              }}
+                              value={price}
                             />
                           </div>
                           <div className="col-md-6">
@@ -125,6 +201,10 @@ const AddProduct = () => {
                               placeholder="Quantity of products in stock "
                               name="quantity"
                               required
+                              onChange={(e) => {
+                                setQuantity(e.target.value);
+                              }}
+                              value={quantity}
                             />
                           </div>
                           <div className="col-12">
@@ -139,10 +219,15 @@ const AddProduct = () => {
                               id="inputProductType"
                               required
                               name="category"
+                              onChange={(e) => {
+                                setCategory(e.target.value);
+                              }}
+                              value={category}
                             >
                               <option value="{{$item->category_id}}">
                                 Category
                               </option>
+                              <option value="1">test</option>
                             </select>
                           </div>
 

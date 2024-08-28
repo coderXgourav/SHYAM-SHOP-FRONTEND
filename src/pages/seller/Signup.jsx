@@ -1,8 +1,14 @@
 import { useState } from "react";
 import "./style.css";
 import { SellerSignup } from "../../utils/seller/sellerAPI";
+import { ToastContainer, toast } from "react-toastify";
 
 const Signup = () => {
+  const [btnStatus, setBtnStatus] = useState(false);
+  const isLogin = localStorage.getItem("sellerToken");
+  if (isLogin) {
+    window.location = "/seller/dashboard";
+  }
   const [sellerName, setSellerName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -13,8 +19,9 @@ const Signup = () => {
   const [rEmail, setRemail] = useState(false);
   const [rPassword, setRpassword] = useState(false);
 
-  const signupFormHandler = (event) => {
+  const signupFormHandler = async (event) => {
     event.preventDefault();
+    setBtnStatus(true);
 
     if (sellerName.length > 0) {
       setRname(false);
@@ -40,9 +47,21 @@ const Signup = () => {
       setRpassword(true);
     }
     if (!username || !sellerName || !email || !password) {
+      setBtnStatus(false);
     } else {
       const sellerData = { sellerName, username, email, password };
-      SellerSignup(sellerData);
+      const result = await SellerSignup(sellerData);
+      setBtnStatus(false);
+      toast[result.icon](result.title);
+      if (result.status === true) {
+        setSellerName("");
+        setUsername("");
+        setEmail("");
+        setPassword("");
+        setTimeout(() => {
+          window.location = "/seller/dashboard";
+        }, 2000);
+      }
     }
   };
 
@@ -201,8 +220,7 @@ const Signup = () => {
                               ""
                             )}
                           </div>
-
-                          <div className="col-12">
+                          {/* <div className="col-12">
                             <div className="form-check form-switch">
                               <input
                                 className="form-check-input"
@@ -217,13 +235,15 @@ const Signup = () => {
                                 I read and agree to Terms &amp; Conditions
                               </label>
                             </div>
-                          </div>
+                          </div> */}{" "}
+                          <br />
                           <div className="col-12">
                             <div className="d-grid">
                               <button
                                 type="submit"
                                 className="btn btn-primary"
                                 id="submitBtn"
+                                disabled={btnStatus}
                               >
                                 Sign up
                               </button>
@@ -246,6 +266,7 @@ const Signup = () => {
                               </button>
                             </div>
                           </div>
+                          <ToastContainer />
                           <div className="col-12">
                             <div className="text-center ">
                               <p className="mb-0">
@@ -256,7 +277,7 @@ const Signup = () => {
                           </div>
                         </form>
                       </div>
-                      <div className="login-separater text-center mb-5">
+                      {/* <div className="login-separater text-center mb-5">
                         <span>OR SIGN UP WITH EMAIL</span>
                         <hr />
                       </div>
@@ -285,7 +306,7 @@ const Signup = () => {
                         >
                           <i className="bx bxl-linkedin" />
                         </a>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>

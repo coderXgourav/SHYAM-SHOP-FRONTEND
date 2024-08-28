@@ -1,6 +1,15 @@
 import React from "react";
 
 const SellerHeader = () => {
+  const isLogin = localStorage.getItem("sellerToken");
+  if (!isLogin) {
+    window.location = "/seller/login";
+  }
+
+  const sellerLogout = () => {
+    localStorage.removeItem("sellerToken");
+    window.location = "/seller/login";
+  };
   return (
     <>
       <div class="wrapper">
@@ -154,7 +163,7 @@ const SellerHeader = () => {
                     </a>
                   </li>
                   <li>
-                    <a href="/seller/logout">
+                    <a onClick={sellerLogout} href="#">
                       <i className="bx bx-radio-circle" />
                       Logout
                     </a>
@@ -321,7 +330,8 @@ const SellerHeader = () => {
                     <li>
                       <a
                         className="dropdown-item d-flex align-items-center"
-                        href="/seller/logout"
+                        href="#"
+                        onClick={sellerLogout}
                       >
                         <i className="bx bx-log-out-circle" />
                         <span>Logout</span>
