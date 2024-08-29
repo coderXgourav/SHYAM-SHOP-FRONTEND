@@ -1,5 +1,5 @@
 import axios from "axios";
-
+const token = localStorage.getItem("sellerToken");
 export const SellerSignup = async (data) => {
   const api_url = process.env.REACT_APP_API_URL;
   try {
@@ -23,5 +23,25 @@ export const sellerLogin = async (data) => {
     return response.data;
   } catch (error) {
     return { status: false, title: "Something wrong", icon: "error" };
+  }
+};
+
+export const sellerAddProduct = async (data) => {
+  const api_url = process.env.REACT_APP_API_URL;
+  try {
+    const response = await axios.post(
+      `${api_url}/seller/add-product`,
+
+      {
+        body: data,
+        headers: {
+          token: `${token}`,
+        },
+      }
+    );
+
+    console.log(response);
+  } catch (error) {
+    return { status: false, title: "technical issue", icon: "error" };
   }
 };

@@ -1,45 +1,91 @@
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
-import React, { useEffect } from "react";
+import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
 import Quill from "quill";
-import { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const AddProduct = () => {
-  const [images, setImages] = useState([]);
+  const [btnStatus, setBtnStatus] = useState(false);
+  const [selectedFile, setSelectedFiles] = useState(null);
+  const [previews, setPreviews] = useState([]);
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [img, setImg] = useState("");
+  // const [img, setImg] = useState([]);
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [category, setCategory] = useState("");
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(files);
+
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setPreviews(newPreviews);
+  };
+
   const productAddHandler = async (event) => {
     event.preventDefault();
-    if (!title || !price || !quantity || !category) {
+    setBtnStatus(true);
+    if (!title || !price || !quantity || !category || !selectedFile || !desc) {
+      setBtnStatus(false);
+    } else {
+      const data = { title, price, quantity, category, desc, selectedFile };
+      sellerAddProduct(data);
+      setBtnStatus(false);
     }
   };
 
   // Handle file input change
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    const imagePreviews = files.map((file) => URL.createObjectURL(file));
-
-    setImages((prevImages) => [...prevImages, ...imagePreviews]);
-
-    // Clean up object URLs to avoid memory leaks
-    files.forEach((file) => URL.revokeObjectURL(file));
-  };
+  // const handleFileChange = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   const imagePreviews = files.map((file) => URL.createObjectURL(file));
+  //   setImages((prevImages) => [...prevImages, ...imagePreviews]);
+  //   files.forEach((file) => URL.revokeObjectURL(file));
+  //   setImg(images);
+  // };
 
   // Handle image removal
-  const handleRemoveImage = (index) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-  };
+  // const handleRemoveImage = (index) => {
+  //   setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  // };
+
+  // useEffect(() => {
+  //   new Quill("#editor-container", {
+  //     theme: "snow",
+  //   });
+  // }, []);
+
+  const editorRef = useRef(null);
+
   useEffect(() => {
-    new Quill("#editor-container", {
+    // Initialize Quill editor
+    const quill = new Quill(editorRef.current, {
       theme: "snow",
+      modules: {
+        toolbar: [
+          [{ header: "1" }, { header: "2" }],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["bold", "italic", "underline"],
+          ["link"],
+          [{ color: [] }, { background: [] }],
+          [{ align: [] }],
+          ["clean"],
+        ],
+      },
     });
+
+    // Update the desc state whenever the content changes
+    quill.on("text-change", () => {
+      setDesc(quill.root.innerHTML);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      quill.off("text-change");
+    };
   }, []);
+
   return (
     <>
       <SellerHeader />
@@ -105,7 +151,12 @@ const AddProduct = () => {
                         <div className="mb-3">
                           <label htmlFor>Description</label>
                           <div>
+                            {/* <div
+                              id="editor-container"
+                              style={{ height: "200px" }}
+                            ></div> */}
                             <div
+                              ref={editorRef}
                               id="editor-container"
                               style={{ height: "200px" }}
                             ></div>
@@ -128,40 +179,19 @@ const AddProduct = () => {
                             required={true}
                           />
                         </div>
-                        <div style={{ display: "flex", flexWrap: "wrap" }}>
-                          {images.map((image, index) => (
-                            <div
-                              key={index}
-                              style={{ position: "relative", margin: "5px" }}
-                            >
-                              <img
-                                src={image}
-                                alt={`Preview ${index}`}
-                                style={{
-                                  width: "100px",
-                                  height: "100px",
-                                  objectFit: "cover",
-                                }}
-                              />
-                              <button
-                                onClick={() => handleRemoveImage(index)}
-                                style={{
-                                  position: "absolute",
-                                  top: "0",
-                                  right: "0",
-                                  backgroundColor: "red",
-                                  color: "white",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  borderRadius: "0 0 0 5px",
-                                  padding: "5px",
-                                }}
-                              >
-                                X
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                        {previews.map((preview, index) => (
+                          <img
+                            key={index}
+                            src={preview}
+                            alt={`Preview ${index}`}
+                            style={{
+                              width: "200px",
+                              height: "auto",
+                              marginTop: "10px",
+                              marginRight: "10px",
+                            }}
+                          />
+                        ))}
                       </div>
                     </div>
                     <div className="col-lg-4">
@@ -237,6 +267,7 @@ const AddProduct = () => {
                                 type="submit"
                                 className="btn btn-primary"
                                 id="submitBtn"
+                                disabled={btnStatus}
                               >
                                 Save Product
                               </button>
