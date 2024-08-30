@@ -157,7 +157,7 @@ const SellerHeader = () => {
                 </a>
                 <ul>
                   <li>
-                    <a href="/change-credential">
+                    <a href="/seller/change-credential">
                       <i className="bx bx-radio-circle" />
                       Change credintials
                     </a>

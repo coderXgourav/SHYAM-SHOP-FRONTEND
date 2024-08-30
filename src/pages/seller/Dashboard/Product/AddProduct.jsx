@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 const AddProduct = () => {
   const [btnStatus, setBtnStatus] = useState(false);
-  const [selectedFile, setSelectedFiles] = useState(null);
+  const [selectedFile, setSelectedFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
 
   const [title, setTitle] = useState("");
@@ -26,35 +26,19 @@ const AddProduct = () => {
 
   const productAddHandler = async (event) => {
     event.preventDefault();
+    const formData = new FormData();
+    formData.append("images", selectedFile[0]);
     setBtnStatus(true);
-    if (!title || !price || !quantity || !category || !selectedFile || !desc) {
+
+    if (!title || !price || !quantity || !category || !desc) {
       setBtnStatus(false);
     } else {
       const data = { title, price, quantity, category, desc, selectedFile };
+
       sellerAddProduct(data);
       setBtnStatus(false);
     }
   };
-
-  // Handle file input change
-  // const handleFileChange = (e) => {
-  //   const files = Array.from(e.target.files);
-  //   const imagePreviews = files.map((file) => URL.createObjectURL(file));
-  //   setImages((prevImages) => [...prevImages, ...imagePreviews]);
-  //   files.forEach((file) => URL.revokeObjectURL(file));
-  //   setImg(images);
-  // };
-
-  // Handle image removal
-  // const handleRemoveImage = (index) => {
-  //   setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-  // };
-
-  // useEffect(() => {
-  //   new Quill("#editor-container", {
-  //     theme: "snow",
-  //   });
-  // }, []);
 
   const editorRef = useRef(null);
 
@@ -117,9 +101,7 @@ const AddProduct = () => {
             </div>
           </div>
 
-          <form id="formSubmit" onSubmit={productAddHandler}>
-            <input type="hidden" id="url" defaultValue="/seller/add-product" />
-            <input type="hidden" id="dataType" defaultValue="POST" />
+          <form onSubmit={productAddHandler} encType="multipart/form-data">
             <div className="card">
               <div className="card-body p-4">
                 <h5 className="card-title">Add New Product</h5>
@@ -172,8 +154,9 @@ const AddProduct = () => {
                         <div className="mb-3 border border-3  rounded p-4">
                           <input
                             type="file"
-                            multiple
                             accept="image/*"
+                            name="images"
+                            multiple
                             onChange={handleFileChange}
                             style={{ marginBottom: "10px" }}
                             required={true}

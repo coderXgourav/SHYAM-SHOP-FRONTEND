@@ -1,5 +1,7 @@
 import axios from "axios";
 const token = localStorage.getItem("sellerToken");
+const api_url = process.env.REACT_APP_API_URL;
+
 export const SellerSignup = async (data) => {
   const api_url = process.env.REACT_APP_API_URL;
   try {
@@ -29,18 +31,29 @@ export const sellerLogin = async (data) => {
 export const sellerAddProduct = async (data) => {
   const api_url = process.env.REACT_APP_API_URL;
   try {
-    const response = await axios.post(
-      `${api_url}/seller/add-product`,
-
-      {
-        body: data,
-        headers: {
-          token: `${token}`,
-        },
-      }
-    );
+    const response = await axios.post(`${api_url}/seller/add-product`, {
+      body: data,
+      headers: {
+        "Content-Type": "multipart/form-data",
+        token: `${token}`,
+      },
+    });
 
     console.log(response);
+  } catch (error) {
+    return { status: false, title: "technical issue", icon: "error" };
+  }
+};
+
+export const credentialUpdate = async (data) => {
+  try {
+    const response = await axios.put(`${api_url}/seller/update-credential`, {
+      body: data,
+      headers: {
+        token: token,
+      },
+    });
+    return response.data;
   } catch (error) {
     return { status: false, title: "technical issue", icon: "error" };
   }
