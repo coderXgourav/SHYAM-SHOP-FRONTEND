@@ -1,5 +1,11 @@
-import React from "react";
+import React from 'react'
 
-const AdminFooter = () => {};
+const AdminFooter = () => {
+  return (
+    <div>
+      
+    </div>
+  )
+}
 
-export default AdminFooter;
+export default AdminFooter
