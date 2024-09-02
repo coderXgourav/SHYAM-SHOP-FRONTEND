@@ -43,14 +43,14 @@ const SellerHeader = () => {
                   <div className="parent-icon">
                     <i className="bx bx-category" />
                   </div>
-                  <div className="menu-title">Category Management </div>
+                  <div className="menu-title">Category </div>
                 </a>
                 <ul>
                   <li>
                     {" "}
                     <a href="/request-category">
                       <i className="bx bx-radio-circle" />
-                      Add Category
+                      Request Add Category
                     </a>
                   </li>
                   <li>

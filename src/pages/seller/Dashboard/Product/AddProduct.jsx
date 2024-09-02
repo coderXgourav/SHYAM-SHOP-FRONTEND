@@ -1,3 +1,4 @@
+import { toast, ToastContainer } from "react-toastify";
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
 import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
@@ -17,26 +18,51 @@ const AddProduct = () => {
   const [category, setCategory] = useState("");
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles(files);
+    const uploadImage = [];
+    const images = e.target.files;
 
-    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    for (let items of images) {
+      uploadImage.push(items);
+    }
+
+    setSelectedFiles(uploadImage);
+
+    const newPreviews = uploadImage.map((file) => URL.createObjectURL(file));
     setPreviews(newPreviews);
   };
 
   const productAddHandler = async (event) => {
     event.preventDefault();
-    const formData = new FormData();
-    formData.append("images", selectedFile[0]);
     setBtnStatus(true);
 
     if (!title || !price || !quantity || !category || !desc) {
       setBtnStatus(false);
+      return toast["error"]("Please Fill input fields");
     } else {
-      const data = { title, price, quantity, category, desc, selectedFile };
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("price", price);
+      formData.append("quantity", quantity);
+      formData.append("category", category);
+      formData.append("desc", desc);
 
-      sellerAddProduct(data);
+      for (let file of selectedFile) {
+        formData.append("image", file);
+      }
+
+      // const data = { title, price, quantity, category, desc, selectedFile };
+
+      const response = await sellerAddProduct(formData);
       setBtnStatus(false);
+      if (response.data.status) {
+        setTitle("");
+        setDesc("");
+        setPrice("");
+        setQuantity("");
+        setCategory("");
+        setSelectedFiles([]);
+      }
+      return toast[response?.data?.icon](response?.data?.title);
     }
   };
 
@@ -123,7 +149,6 @@ const AddProduct = () => {
                             id="inputProductTitle"
                             placeholder="Enter product title"
                             name="title"
-                            required
                             onChange={(e) => {
                               setTitle(e.target.value);
                             }}
@@ -155,11 +180,11 @@ const AddProduct = () => {
                           <input
                             type="file"
                             accept="image/*"
-                            name="images"
+                            name="image"
                             multiple
                             onChange={handleFileChange}
                             style={{ marginBottom: "10px" }}
-                            required={true}
+                            required
                           />
                         </div>
                         {previews.map((preview, index) => (
@@ -193,7 +218,6 @@ const AddProduct = () => {
                               id="inputStarPoints"
                               placeholder="Product Price "
                               name="quantity"
-                              required
                               onChange={(e) => {
                                 setPrice(e.target.value);
                               }}
@@ -213,7 +237,6 @@ const AddProduct = () => {
                               id="inputStarPoints"
                               placeholder="Quantity of products in stock "
                               name="quantity"
-                              required
                               onChange={(e) => {
                                 setQuantity(e.target.value);
                               }}
@@ -230,7 +253,6 @@ const AddProduct = () => {
                             <select
                               className="form-select"
                               id="inputProductType"
-                              required
                               name="category"
                               onChange={(e) => {
                                 setCategory(e.target.value);
@@ -284,6 +306,7 @@ const AddProduct = () => {
           </form>
         </div>
       </div>
+      <ToastContainer />
       <SellerFooter />
     </>
   );

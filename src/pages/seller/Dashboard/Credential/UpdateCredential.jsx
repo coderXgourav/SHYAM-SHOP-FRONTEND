@@ -1,7 +1,10 @@
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
-import { useState } from "react";
-import { credentialUpdate } from "../../../../utils/seller/sellerAPI";
+import { useState, useEffect } from "react";
+import {
+  credentialUpdate,
+  credentialDetails,
+} from "../../../../utils/seller/sellerAPI";
 import { toast, ToastContainer } from "react-toastify";
 
 const UpdateCredential = () => {
@@ -9,6 +12,13 @@ const UpdateCredential = () => {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [btnStatus, setBtnStatus] = useState(false);
+
+  useEffect(async () => {
+    const sellerDetails = await credentialDetails();
+    setUsername(sellerDetails?.username);
+    setEmail(sellerDetails?.seller_email);
+    setPassword(sellerDetails?.seller_password);
+  }, [0]);
 
   const updateCredentialSubmit = async (event) => {
     event.preventDefault();
@@ -102,7 +112,7 @@ const UpdateCredential = () => {
                     <br />
                     <input
                       className="form-control"
-                      type="text"
+                      type="password"
                       placeholder="Type new password"
                       onChange={(e) => {
                         setPassword(e.target.value);

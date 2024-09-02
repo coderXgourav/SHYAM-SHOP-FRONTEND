@@ -1,12 +1,25 @@
+import { useState } from "react";
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
+import { ToastContainer, toast } from "react-toastify";
+import { addRequestCategory } from "../../../../utils/seller/sellerAPI";
+
 const AddCategory = () => {
+  const [category, setCategory] = useState("");
+  const categoryFormSubmit = (event) => {
+    event.preventDefault();
+    if (!category) {
+      return toast["error"]("Please Fill Input Fields");
+    } else {
+      addRequestCategory(category);
+    }
+  };
+
   return (
     <>
       <SellerHeader />
       <div className="page-wrapper">
         <div className="page-content">
-          {/*breadcrumb*/}
           <div className="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
             <div className="breadcrumb-title pe-3">Forms</div>
             <div className="ps-3">
@@ -26,7 +39,6 @@ const AddCategory = () => {
             <div className="ms-auto">
               <div className="btn-group">
                 <a href="{{route('seller.viewCategoryPage')}}">
-                  {" "}
                   <button type="button" className="btn btn-sm btn-primary">
                     View Category
                   </button>
@@ -37,26 +49,14 @@ const AddCategory = () => {
           {/*end breadcrumb*/}
           <div className="row">
             <div className="col-xl-9 mx-auto">
-              <form id="formSubmit">
-                <input
-                  type="hidden"
-                  id="url"
-                  defaultValue="/seller/add-category"
-                />
-                <input type="hidden" id="dataType" defaultValue="POST" />
-                <input
-                  type="hidden"
-                  name="_token"
-                  defaultValue="LcoydqmIVeeSsJm2SfgstfFVDOZO97lrPPt02Efn"
-                />
+              <form onSubmit={categoryFormSubmit}>
                 <div className="card">
                   <div className="card-header">
                     <h4 className="my-4 text-center text-primary">
-                      Request to Add Category{" "}
+                      Request to Add Category
                     </h4>
                   </div>
                   <div className="card-body">
-                    {" "}
                     <br />
                     <input
                       className="form-control"
@@ -65,20 +65,12 @@ const AddCategory = () => {
                       placeholder="Type Category Name"
                       required=""
                       name="category_name"
-                    />{" "}
+                      onChange={(e) => {
+                        setCategory(e.target.value);
+                      }}
+                      value={category}
+                    />
                     <br />
-                    <div>
-                      <input
-                        className="form-control"
-                        type="file"
-                        placeholder="Type Category Name"
-                        required=""
-                        name="category_photo"
-                        id="imageInput"
-                      />{" "}
-                      <br />
-                      <div id="imagePreview" />
-                    </div>
                   </div>
                   <br />
                   <div className="card-footer text-center">
@@ -91,21 +83,6 @@ const AddCategory = () => {
                       className="btn btn-primary "
                       value={"Request to add category"}
                     />
-                    <button
-                      className="btn btn-primary"
-                      type="button"
-                      disabled=""
-                      id="loadingBtn"
-                      style={{ display: "none", width: 136 }}
-                    >
-                      {" "}
-                      <span
-                        className="spinner-border spinner-border-sm"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      <span className="visually-hidden">Loading...</span>
-                    </button>
                   </div>
                   <br />
                 </div>
@@ -114,6 +91,7 @@ const AddCategory = () => {
           </div>
           {/*end row*/}
         </div>
+        <ToastContainer />
       </div>
       <SellerFooter />
     </>

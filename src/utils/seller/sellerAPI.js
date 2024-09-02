@@ -31,16 +31,18 @@ export const sellerLogin = async (data) => {
 export const sellerAddProduct = async (data) => {
   const api_url = process.env.REACT_APP_API_URL;
   try {
-    const response = await axios.post(`${api_url}/seller/add-product`, {
-      body: data,
-      headers: {
-        "Content-Type": "multipart/form-data",
-        token: `${token}`,
-      },
-    });
-
-    console.log(response);
+    const response = await axios
+      .post(`${api_url}/seller/add-product`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      })
+      .then((response) => response)
+      .catch((error) => error);
+    return response;
   } catch (error) {
+    console.log("error");
     return { status: false, title: "technical issue", icon: "error" };
   }
 };
@@ -55,6 +57,33 @@ export const credentialUpdate = async (data) => {
     });
     return response.data;
   } catch (error) {
+    return { status: false, title: "technical issue", icon: "error" };
+  }
+};
+
+export const credentialDetails = async () => {
+  try {
+    const data = await axios.post(`${api_url}/seller/credential-details`, {
+      headers: {
+        token: token,
+      },
+    });
+    return data.data;
+  } catch (error) {
+    return { status: false, title: "Token does not matched", icon: "warning" };
+  }
+};
+
+export const addRequestCategory = async (data) => {
+  try {
+    const response = await axios.post(`${api_url}/seller/add-category`, {
+      body: data,
+      headers: {
+        token: token,
+      },
+    });
+  } catch (error) {
+    console.log("error :", error.message);
     return { status: false, title: "technical issue", icon: "error" };
   }
 };
