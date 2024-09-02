@@ -1,15 +1,53 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import AdminFooter from "../../../../components/admin/AdminFooter";
 import AdminHeader from "../../../../components/admin/AdminHeader";
-import SellerFooter from "../../../../components/seller/SellerFooter";
-import SellerHeader from "../../../../components/seller/SellerHeader";
+import Cookies from "js-cookie";
 
 const AdminViewCategory = () => {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    // Fetch categories from the API
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-category`, {
+          headers: {
+            'Authorization': `Bearer ${Cookies.get('adminToken')}`, // Include token if needed
+          },
+        });
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error('Failed to fetch categories', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const confirmFunction = async (categoryId, deleteUrl) => {
+    const isConfirmed = window.confirm('Are you sure you want to delete this category?');
+    if (isConfirmed) {
+      try {
+        await axios.delete(`${process.env.REACT_APP_API_URL}${deleteUrl}/${categoryId}`, {
+          headers: {
+            'Authorization': `Bearer ${Cookies.get('adminToken')}`, // Include token if needed
+          },
+        });
+        // Update the category list after deletion
+        setCategories(categories.filter(category => category._id !== categoryId));
+      } catch (error) {
+        console.error('Failed to delete category', error);
+      }
+    }
+  };
+
   return (
     <>
       <AdminHeader />
       <div className="page-wrapper">
         <div className="page-content">
-          {/*breadcrumb*/}
+          {/* breadcrumb */}
           <div className="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
             <div className="ps-3">
               <nav aria-label="breadcrumb">
@@ -26,7 +64,7 @@ const AdminViewCategory = () => {
               </nav>
             </div>
           </div>
-          {/*end breadcrumb*/}
+          {/* end breadcrumb */}
           <div className="card">
             <div className="card-body">
               <div className="d-lg-flex align-items-center mb-4 gap-3">
@@ -43,11 +81,11 @@ const AdminViewCategory = () => {
 
                 <div className="ms-auto">
                   <a
-                    href="{{route('seller.addCategoryPage')}}"
+                    href="#"
                     className="btn btn-sm btn-primary mt-2 mt-lg-0"
                   >
                     <i className="bx bxs-plus-square" />
-                    Add New Order
+                    Add New Category
                   </a>
                 </div>
               </div>
@@ -63,43 +101,38 @@ const AdminViewCategory = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div>1</div>
-                          <div className="ms-2">
-                            <h6 className="mb-0 font-14"></h6>
+                    {categories.map((category, index) => (
+                      <tr key={category._id}>
+                        <td>{index + 1}</td>
+                        <td>
+                          <img
+                            src={`${process.env.REACT_APP_API_URL}/${category.image}`}
+                            alt={category.name}
+                            className="img img-thumbnail"
+                            width="50px"
+                          />
+                        </td>
+                        <td>{category.name}</td>
+                        <td>{new Date(category.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <div className="d-flex order-actions">
+                            <a
+                              href={`edit-category/${category._id}`}
+                              className=""
+                            >
+                              <i className="bx bxs-edit" />
+                            </a>
+                            <a
+                              href="javascript:;"
+                              className="ms-3"
+                              onClick={() => confirmFunction(category._id, '/admin/delete-category')}
+                            >
+                              <i className="bx bxs-trash" />
+                            </a>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <img
-                          src="{{url('category')}}/{{$category->category_image}}"
-                          alt="category_image"
-                          className="img img-thumbnail"
-                          width="50px"
-                        />
-                      </td>
-                      <td>Category name</td>
-                      <td>12-02-2024</td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          <a
-                            href="{{ route('seller.edit-category.sellerCategoryEdit',$category->category_id ) }}"
-                            className=""
-                          >
-                            <i className="bx bxs-edit" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="ms-3"
-                            onclick="confirmfunction({{$category->category_id}},'/seller/delete-category')"
-                          >
-                            <i className="bx bxs-trash" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -111,4 +144,5 @@ const AdminViewCategory = () => {
     </>
   );
 };
+
 export default AdminViewCategory;
