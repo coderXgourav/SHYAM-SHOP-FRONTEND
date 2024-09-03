@@ -72,7 +72,7 @@ const AdminHeader = () => {
                 <ul>
                   <li>
                     {" "}
-                    <a href="/admin-request-category">
+                    <a href="/admin-add-category">
                       <i className="bx bx-radio-circle" />
                       Add Category
                     </a>
@@ -84,6 +84,14 @@ const AdminHeader = () => {
                       View Categories
                     </a>
                   </li>
+                  <li>
+                    {" "}
+                    <a href="/admin-request-category">
+                      <i className="bx bx-radio-circle" />
+                      Request Categories
+                    </a>
+                  </li>
+                  
                 </ul>
               </li>
               <li>
