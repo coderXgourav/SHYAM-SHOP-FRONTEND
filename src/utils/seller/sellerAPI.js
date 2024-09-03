@@ -82,6 +82,7 @@ export const addRequestCategory = async (data) => {
         token: token,
       },
     });
+    return response.data;
   } catch (error) {
     console.log("error :", error.message);
     return { status: false, title: "technical issue", icon: "error" };
