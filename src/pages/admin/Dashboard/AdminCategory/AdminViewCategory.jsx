@@ -1,45 +1,63 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Modal, Pagination, Spin } from 'antd';
 import AdminFooter from "../../../../components/admin/AdminFooter";
 import AdminHeader from "../../../../components/admin/AdminHeader";
 import Cookies from "js-cookie";
 
 const AdminViewCategory = () => {
   const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false); // Added loading state
+
+  const fetchCategories = async (page = 1) => {
+    setLoading(true); // Set loading to true when fetching starts
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-category`, {
+        headers: {
+          'Authorization': `${Cookies.get('adminToken')}`,
+        },
+        params: {
+          page,
+          limit: 10, // Fetch 10 categories per page
+        },
+      });
+      setCategories(response.data.categories);
+      setTotalPages(response.data.totalPages);
+      setCurrentPage(response.data.currentPage);
+    } catch (error) {
+      console.error('Failed to fetch categories', error);
+    } finally {
+      setLoading(false); // Set loading to false when fetching completes
+    }
+  };
 
   useEffect(() => {
-    // Fetch categories from the API
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-category`, {
-          headers: {
-            'Authorization': `Bearer ${Cookies.get('adminToken')}`, // Include token if needed
-          },
-        });
-        setCategories(response.data.categories);
-      } catch (error) {
-        console.error('Failed to fetch categories', error);
-      }
-    };
+    fetchCategories(currentPage);
+  }, [currentPage]);
 
-    fetchCategories();
-  }, []);
-
-  const confirmFunction = async (categoryId, deleteUrl) => {
-    const isConfirmed = window.confirm('Are you sure you want to delete this category?');
-    if (isConfirmed) {
-      try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}${deleteUrl}/${categoryId}`, {
-          headers: {
-            'Authorization': `Bearer ${Cookies.get('adminToken')}`, // Include token if needed
-          },
-        });
-        // Update the category list after deletion
-        setCategories(categories.filter(category => category._id !== categoryId));
-      } catch (error) {
-        console.error('Failed to delete category', error);
-      }
-    }
+  const confirmFunction = (categoryId) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this category?',
+      content: 'This action cannot be undone.',
+      onOk: async () => {
+        try {
+          await axios.delete(`${process.env.REACT_APP_API_URL}/admin/admin-delete-category/${categoryId}`, {
+            headers: {
+              'Authorization': `${Cookies.get('adminToken')}`,
+            },
+          });
+          // Fetch updated categories after deletion
+          fetchCategories(currentPage);
+        } catch (error) {
+          console.error('Failed to delete category', error);
+        }
+      },
+      onCancel() {
+        console.log('Deletion cancelled');
+      },
+    });
   };
 
   return (
@@ -81,7 +99,7 @@ const AdminViewCategory = () => {
 
                 <div className="ms-auto">
                   <a
-                    href="#"
+                    href="/admin-request-category"
                     className="btn btn-sm btn-primary mt-2 mt-lg-0"
                   >
                     <i className="bx bxs-plus-square" />
@@ -89,52 +107,73 @@ const AdminViewCategory = () => {
                   </a>
                 </div>
               </div>
-              <div className="table-responsive">
-                <table className="table mb-0" id="myTable">
-                  <thead className="table-light">
-                    <tr>
-                      <th>No</th>
-                      <th>Image</th>
-                      <th>Category Name</th>
-                      <th>Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map((category, index) => (
-                      <tr key={category._id}>
-                        <td>{index + 1}</td>
-                        <td>
-                          <img
-                            src={`${process.env.REACT_APP_API_URL}/${category.image}`}
-                            alt={category.name}
-                            className="img img-thumbnail"
-                            width="50px"
-                          />
-                        </td>
-                        <td>{category.name}</td>
-                        <td>{new Date(category.createdAt).toLocaleDateString()}</td>
-                        <td>
-                          <div className="d-flex order-actions">
-                            <a
-                              href={`edit-category/${category._id}`}
-                              className=""
-                            >
-                              <i className="bx bxs-edit" />
-                            </a>
-                            <a
-                              href="javascript:;"
-                              className="ms-3"
-                              onClick={() => confirmFunction(category._id, '/admin/delete-category')}
-                            >
-                              <i className="bx bxs-trash" />
-                            </a>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="table-responsive" style={{ overflowY: "hidden" }}>
+                {/* Display spinner while loading */}
+                {loading ? (
+                  <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
+                    <Spin size="large" />
+                  </div>
+                ) : (
+                  <>
+                    <table className="table mb-0" id="myTable">
+                      <thead className="table-light">
+                        <tr>
+                          <th>No</th>
+                          <th>Image</th>
+                          <th>Category Name</th>
+                          <th>Date</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {categories.map((category, index) => (
+                          <tr key={category._id}>
+                            <td>{(currentPage - 1) * 10 + index + 1}</td>
+                            <td>
+                              <img
+                                src={category.image ? `${process.env.REACT_APP_API_URL}/uploads/${category.image.split('\\').pop()}` : 'default-image-path'}
+                                alt={category.name}
+                                className="img img-thumbnail"
+                                width="70px"
+                                
+
+                              />
+                            </td>
+                            <td>{category.name}</td>
+                            <td>{new Date(category.createdAt).toLocaleDateString()}</td>
+                            <td>
+                              <div className="d-flex order-actions">
+                                <a
+                                  href={`edit-category/${category._id}`}
+                                  className=""
+                                >
+                                  <i className="bx bxs-edit" />
+                                </a>
+                                <a
+                                  href="javascript:;"
+                                  className="ms-3"
+                                  onClick={() => confirmFunction(category._id)}
+                                >
+                                  <i className="bx bxs-trash" />
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {/* Pagination Controls */}
+                    <div className="pagination mt-4">
+                      <Pagination
+                        current={currentPage}
+                        total={totalPages * 10} // Total number of items
+                        pageSize={10} // Number of items per page
+                        onChange={page => setCurrentPage(page)}
+                        showSizeChanger={false} // Hide size changer
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

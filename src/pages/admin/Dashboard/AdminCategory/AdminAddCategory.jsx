@@ -77,6 +77,13 @@ const AdminAddCategory = () => {
         theme: "light",
         transition: Bounce,
       });
+
+
+        // Reset form fields
+        setCategoryName('');
+        setImage(null);
+        setImagePreview('');
+        
     } catch (error) {
       toast.error('Category already exists.', {
         position: "top-center",
