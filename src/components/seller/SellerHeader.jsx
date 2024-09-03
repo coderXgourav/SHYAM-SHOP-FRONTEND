@@ -55,9 +55,9 @@ const SellerHeader = () => {
                   </li>
                   <li>
                     {" "}
-                    <a href="/view-category">
+                    <a href="/seller/view-category">
                       <i className="bx bx-radio-circle" />
-                      View Categories
+                      Request Categories
                     </a>
                   </li>
                 </ul>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import AdminFooter from "../../../../components/admin/AdminFooter";
 import AdminHeader from "../../../../components/admin/AdminHeader";
 import Cookies from "js-cookie";
@@ -11,14 +11,17 @@ const AdminViewCategory = () => {
     // Fetch categories from the API
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-category`, {
-          headers: {
-            'Authorization': `Bearer ${Cookies.get('adminToken')}`, // Include token if needed
-          },
-        });
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/admin/admin-category`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("adminToken")}`, // Include token if needed
+            },
+          }
+        );
         setCategories(response.data.categories);
       } catch (error) {
-        console.error('Failed to fetch categories', error);
+        console.error("Failed to fetch categories", error);
       }
     };
 
@@ -26,18 +29,25 @@ const AdminViewCategory = () => {
   }, []);
 
   const confirmFunction = async (categoryId, deleteUrl) => {
-    const isConfirmed = window.confirm('Are you sure you want to delete this category?');
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this category?"
+    );
     if (isConfirmed) {
       try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}${deleteUrl}/${categoryId}`, {
-          headers: {
-            'Authorization': `Bearer ${Cookies.get('adminToken')}`, // Include token if needed
-          },
-        });
+        await axios.delete(
+          `${process.env.REACT_APP_API_URL}${deleteUrl}/${categoryId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("adminToken")}`, // Include token if needed
+            },
+          }
+        );
         // Update the category list after deletion
-        setCategories(categories.filter(category => category._id !== categoryId));
+        setCategories(
+          categories.filter((category) => category._id !== categoryId)
+        );
       } catch (error) {
-        console.error('Failed to delete category', error);
+        console.error("Failed to delete category", error);
       }
     }
   };
@@ -80,10 +90,7 @@ const AdminViewCategory = () => {
                 </div>
 
                 <div className="ms-auto">
-                  <a
-                    href="#"
-                    className="btn btn-sm btn-primary mt-2 mt-lg-0"
-                  >
+                  <a href="#" className="btn btn-sm btn-primary mt-2 mt-lg-0">
                     <i className="bx bxs-plus-square" />
                     Add New Category
                   </a>
@@ -113,7 +120,9 @@ const AdminViewCategory = () => {
                           />
                         </td>
                         <td>{category.name}</td>
-                        <td>{new Date(category.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          {new Date(category.createdAt).toLocaleDateString()}
+                        </td>
                         <td>
                           <div className="d-flex order-actions">
                             <a
@@ -125,7 +134,12 @@ const AdminViewCategory = () => {
                             <a
                               href="javascript:;"
                               className="ms-3"
-                              onClick={() => confirmFunction(category._id, '/admin/delete-category')}
+                              onClick={() =>
+                                confirmFunction(
+                                  category._id,
+                                  "/admin/delete-category"
+                                )
+                              }
                             >
                               <i className="bx bxs-trash" />
                             </a>

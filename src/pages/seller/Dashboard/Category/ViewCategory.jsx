@@ -1,7 +1,18 @@
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
+import { useEffect, useState } from "react";
+import { collectCategories } from "../../../../utils/seller/sellerAPI";
 
 const ViewCategory = () => {
+  const [category, setCategory] = useState([]);
+
+  useEffect(async () => {
+    const result = await collectCategories();
+    setCategory(result);
+  }, [0]);
+
+  console.log(category);
+
   return (
     <>
       <SellerHeader />
@@ -61,43 +72,46 @@ const ViewCategory = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div>1</div>
-                          <div className="ms-2">
-                            <h6 className="mb-0 font-14"></h6>
+                    {category.map((item) => (
+                      <tr>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <div>1</div>
+                            <div className="ms-2">
+                              <h6 className="mb-0 font-14"></h6>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <img
-                          src="{{url('category')}}/{{$category->category_image}}"
-                          alt="category_image"
-                          className="img img-thumbnail"
-                          width="50px"
-                        />
-                      </td>
-                      <td>Category name</td>
-                      <td>12-02-2024</td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          <a
-                            href="{{ route('seller.edit-category.sellerCategoryEdit',$category->category_id ) }}"
-                            className=""
-                          >
-                            <i className="bx bxs-edit" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="ms-3"
-                            onclick="confirmfunction({{$category->category_id}},'/seller/delete-category')"
-                          >
-                            <i className="bx bxs-trash" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                        <td>
+                          <img
+                            src=""
+                            alt="category_image"
+                            className="img img-thumbnail"
+                            width="50px"
+                          />
+                        </td>
+                        <td>{item.request_category_name}</td>
+                        <td>12-02-2024</td>
+                        <td>
+                          <div className="d-flex order-actions">
+                            <a
+                              href="{{ route('seller.edit-category.sellerCategoryEdit',$category->category_id ) }}"
+                              className=""
+                            >
+                              <i className="bx bxs-edit" />
+                            </a>
+                            <a
+                              href="javascript:;"
+                              className="ms-3"
+                              onclick="confirmfunction({{$category->category_id}},'/seller/delete-category')"
+                            >
+                              <i className="bx bxs-trash" />
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    ;
                   </tbody>
                 </table>
               </div>

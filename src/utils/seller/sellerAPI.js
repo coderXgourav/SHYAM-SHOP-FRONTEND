@@ -88,3 +88,16 @@ export const addRequestCategory = async (data) => {
     return { status: false, title: "technical issue", icon: "error" };
   }
 };
+
+export const collectCategories = async () => {
+  try {
+    const data = await axios.get(`${api_url}/seller/get-categories`, {
+      headers: {
+        token: token,
+      },
+    });
+    return data.data;
+  } catch (error) {
+    return { status: false, title: "technical issue", icon: "error" };
+  }
+};
