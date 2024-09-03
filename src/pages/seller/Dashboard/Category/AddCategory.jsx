@@ -6,12 +6,22 @@ import { addRequestCategory } from "../../../../utils/seller/sellerAPI";
 
 const AddCategory = () => {
   const [category, setCategory] = useState("");
-  const categoryFormSubmit = (event) => {
+  const [btnStatus, setBtnStatus] = useState(false);
+
+  const categoryFormSubmit = async (event) => {
     event.preventDefault();
+    setBtnStatus(false);
     if (!category) {
+      setBtnStatus(false);
       return toast["error"]("Please Fill Input Fields");
     } else {
-      addRequestCategory(category);
+      const data = { category };
+      const result = await addRequestCategory(data);
+      toast[result.icon](result.title);
+      if (result.status) {
+        setCategory("");
+        setBtnStatus(false);
+      }
     }
   };
 
@@ -64,11 +74,10 @@ const AddCategory = () => {
                       type="text"
                       placeholder="Type Category Name"
                       required=""
-                      name="category_name"
+                      value={category}
                       onChange={(e) => {
                         setCategory(e.target.value);
                       }}
-                      value={category}
                     />
                     <br />
                   </div>
@@ -81,6 +90,7 @@ const AddCategory = () => {
                       id="submitBtn"
                       defaultValue="Add Category"
                       className="btn btn-primary "
+                      disabled={btnStatus}
                       value={"Request to add category"}
                     />
                   </div>
