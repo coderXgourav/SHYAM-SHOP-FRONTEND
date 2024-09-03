@@ -10,6 +10,8 @@ const AdminAddCategory = () => {
   const [categoryName, setCategoryName] = useState('');
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [subCategories, setSubCategories] = useState([]);
+  const [newSubCategory, setNewSubCategory] = useState('');
 
   const handleCategoryNameChange = (e) => {
     setCategoryName(e.target.value);
@@ -47,12 +49,27 @@ const AdminAddCategory = () => {
     }
   };
 
+  const handleSubCategoryChange = (e) => {
+    setNewSubCategory(e.target.value);
+  };
+
+  const addSubCategory = () => {
+    if (newSubCategory.trim()) {
+      setSubCategories([...subCategories, { sub: newSubCategory }]);
+      setNewSubCategory('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
     formData.append('name', categoryName);
     formData.append('image', image);
+
+    if (subCategories.length > 0) {
+      formData.append('sub_category', JSON.stringify(subCategories)); // Convert sub_category array to JSON string
+    }
 
     try {
       const response = await axios.post(
@@ -78,14 +95,15 @@ const AdminAddCategory = () => {
         transition: Bounce,
       });
 
-
-        // Reset form fields
-        setCategoryName('');
-        setImage(null);
-        setImagePreview('');
-        
+      // Reset form fields
+      setCategoryName('');
+      setImage(null);
+      setImagePreview('');
+      setSubCategories([]);
+      
+      console.log('Category created successfully', response.data);
     } catch (error) {
-      toast.error('Category already exists.', {
+      toast.error('Failed to create category. Please try again.', {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -96,6 +114,7 @@ const AdminAddCategory = () => {
         theme: "light",
         transition: Bounce,
       });
+      console.error('Failed to create category', error.response?.data || error.message);
     }
   };
 
@@ -124,20 +143,46 @@ const AdminAddCategory = () => {
                     />
                     <br />
                     <input
-                      className="form-control"
-                      type="file"
-                      required
-                      onChange={handleImageChange}
-                    />
-                    <br />
-                    {imagePreview && (
-                      <div className="text-center my-3">
-                        <img
-                          src={imagePreview}
-                          alt="Image preview"
-                          style={{ maxWidth: '50%', height: 'auto' }}
-                        />
-                      </div>
+                        className="form-control"
+                        type="file"
+                        required
+                        onChange={handleImageChange}
+                      />
+                      <br />
+                      {imagePreview && (
+                        <div className="text-center my-3">
+                          <img
+                            src={imagePreview}
+                            alt="Image preview"
+                            style={{ maxWidth: '50%', height: 'auto' }}
+                          />
+                        </div>
+                      )}
+
+                    <div className="mb-3" style={{display:"flex",alignItems:"center",gap:"1rem",height:"5vh"}}>
+                      <input
+                        className="form-control"
+                        type="text"
+                        placeholder="Type Sub-category Name"
+                        value={newSubCategory}
+                        onChange={handleSubCategoryChange}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-secondary  my-3"
+                        onClick={addSubCategory} style={{display:"flex",alignItems:"center",justifyContent:"center",height:"5vh",fontSize:"20px"}}
+                      >
+                        +
+                      </button>
+                    </div>
+                    {subCategories.length > 0 && (
+                      <ul className="list-group">
+                        {subCategories.map((subCategory, index) => (
+                          <li key={index} className="list-group-item">
+                            {subCategory.sub}
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                   <div className="card-footer text-center">

@@ -1,14 +1,33 @@
+import React, { useEffect, useState } from 'react';
 import AdminFooter from "../../../components/admin/AdminFooter";
 import AdminHeader from "../../../components/admin/AdminHeader";
-
+import axios from 'axios'; // Import axios
+import Cookies from "js-cookie";
 
 const AdminViewSeller = () => {
+  const [sellers, setSellers] = useState([]);
+
+  useEffect(() => {
+    const token = Cookies.get("adminToken"); // Ensure correct token key
+
+    axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-get-all-seller`, {
+      headers: {
+        'Authorization': `${token}`, // Use `Bearer ${token}`
+      },
+    })
+    .then((response) => {
+      setSellers(response.data); // Directly use response.data
+    })
+    .catch((error) => {
+      console.error('Error fetching sellers:', error);
+    });
+  }, []);
+
   return (
     <>
       <AdminHeader />
       <div className="page-wrapper">
         <div className="page-content">
-          {/*breadcrumb*/}
           <div className="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
             <div className="ps-3">
               <nav aria-label="breadcrumb">
@@ -25,7 +44,6 @@ const AdminViewSeller = () => {
               </nav>
             </div>
           </div>
-          {/*end breadcrumb*/}
           <div className="card">
             <div className="card-body">
               <div className="d-lg-flex align-items-center mb-4 gap-3">
@@ -52,101 +70,52 @@ const AdminViewSeller = () => {
                     <tr>
                       <th>Seller ID</th>
                       <th>Seller Name</th>
-                      <th>Status</th>
-                      <th>Total Sales</th>
+                      <th>Email</th>
                       <th>Date Joined</th>
-                      <th>View Details</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div>
-                            <input
-                              className="form-check-input me-3"
-                              type="checkbox"
-                              value=""
-                              aria-label="..."
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-0 font-14">#SL-00123</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>John Doe</td>
-                      <td>
-                        <div className="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3">
-                          <i className="bx bxs-circle me-1"></i>Active
-                        </div>
-                      </td>
-                      <td>$10,000.00</td>
-                      <td>January 15, 2023</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-sm radius-30 px-4"
-                        >
-                          View Details
-                        </button>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          <a href="javascript:void(0);" className="">
-                            <i className="bx bxs-edit"></i>
-                          </a>
-                          <a href="javascript:void(0);" className="ms-3">
-                            <i className="bx bxs-trash"></i>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    {/* Repeat similar structure for other sellers */}
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div>
-                            <input
-                              className="form-check-input me-3"
-                              type="checkbox"
-                              value=""
-                              aria-label="..."
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-0 font-14">#SL-00124</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Jane Smith</td>
-                      <td>
-                        <div className="badge rounded-pill text-warning bg-light-warning p-2 text-uppercase px-3">
-                          <i className="bx bxs-circle me-1"></i>Pending
-                        </div>
-                      </td>
-                      <td>$8,500.00</td>
-                      <td>February 10, 2023</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-sm radius-30 px-4"
-                        >
-                          View Details
-                        </button>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          <a href="javascript:void(0);" className="">
-                            <i className="bx bxs-edit"></i>
-                          </a>
-                          <a href="javascript:void(0);" className="ms-3">
-                            <i className="bx bxs-trash"></i>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
+                    {sellers.length > 0 ? (
+                      sellers.map((seller) => (
+                        <tr key={seller._id}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div>
+                                <input
+                                  className="form-check-input me-3"
+                                  type="checkbox"
+                                  value=""
+                                  aria-label="..."
+                                />
+                              </div>
+                              <div className="ms-2">
+                                <h6 className="mb-0 font-14">{seller._id}</h6>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{seller.seller_name}</td>
+                          <td>{seller.seller_email}</td>
+                          <td>{new Date(seller.createdAt).toLocaleDateString()}</td>
+                          <td>
+                            <div className="d-flex order-actions">
+                              <a href="javascript:void(0);" className="">
+                                <i className="bx bxs-edit"></i>
+                              </a>
+                              <a href="javascript:void(0);" className="ms-3">
+                                <i className="bx bxs-trash"></i>
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="text-center">
+                          No sellers found
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
