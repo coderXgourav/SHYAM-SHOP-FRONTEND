@@ -4,16 +4,12 @@ import AdminFooter from "../../../../components/admin/AdminFooter";
 import AdminHeader from "../../../../components/admin/AdminHeader";
 import Cookies from "js-cookie";
 import { toast, ToastContainer, Bounce } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css'; // Ensure to include this for styling
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminAddCategory = () => {
   const [categoryName, setCategoryName] = useState('');
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
-  const [data,setData]=useState([])
-
-
-  console.log('image',image)
 
   const handleCategoryNameChange = (e) => {
     setCategoryName(e.target.value);
@@ -21,6 +17,24 @@ const AdminAddCategory = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    
+    // Optional: Check file size on client-side
+    const maxSize = 32 * 1024 * 1024; // 32MB
+    if (file.size > maxSize) {
+      toast.error('File size exceeds the 32MB limit. Please upload a smaller file.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      return;
+    }
+    
     setImage(file);
 
     // Create a URL for the selected image file and update the preview state
@@ -36,7 +50,6 @@ const AdminAddCategory = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create a FormData object to handle file uploads
     const formData = new FormData();
     formData.append('name', categoryName);
     formData.append('image', image);
@@ -48,19 +61,24 @@ const AdminAddCategory = () => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${Cookies.get('adminToken')}`, // Include token if needed
+            'Authorization': `Bearer ${Cookies.get('adminToken')}`,
           },
         }
       );
 
-      console.log(response.data);
-      setData(response.data)
-      alert('Category added successfully!');
-      // Optionally, you can redirect or reset the form here
+      toast.success('Category added successfully!', {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
     } catch (error) {
-      // console.error('Error adding category:', error);
-      // alert('Failed to add category.');
-      toast.error('Category already exist', {
+      toast.error('Category already exists.', {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -70,7 +88,7 @@ const AdminAddCategory = () => {
         progress: undefined,
         theme: "light",
         transition: Bounce,
-        });
+      });
     }
   };
 
@@ -79,45 +97,16 @@ const AdminAddCategory = () => {
       <AdminHeader />
       <div className="page-wrapper">
         <div className="page-content">
-          {/*breadcrumb*/}
-          <div className="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-            <div className="breadcrumb-title pe-3">Forms</div>
-            <div className="ps-3">
-              <nav aria-label="breadcrumb">
-                <ol className="breadcrumb mb-0 p-0">
-                  <li className="breadcrumb-item">
-                    <a href="javascript:;">
-                      <i className="bx bx-home-alt" />
-                    </a>
-                  </li>
-                  <li className="breadcrumb-item active" aria-current="page">
-                    Add Category
-                  </li>
-                </ol>
-              </nav>
-            </div>
-            <div className="ms-auto">
-              <div className="btn-group">
-                <a href="{{route('seller.viewCategoryPage')}}">
-                  <button type="button" className="btn btn-sm btn-primary">
-                    View Category
-                  </button>
-                </a>
-              </div>
-            </div>
-          </div>
-          {/*end breadcrumb*/}
           <div className="row">
             <div className="col-xl-9 mx-auto">
               <form id="formSubmit" onSubmit={handleSubmit}>
                 <div className="card">
                   <div className="card-header">
                     <h4 className="my-4 text-center text-primary">
-                      Add Category{" "}
+                      Add Category
                     </h4>
                   </div>
                   <div className="card-body">
-                    <br />
                     <input
                       className="form-control"
                       type="text"
@@ -135,7 +124,7 @@ const AdminAddCategory = () => {
                     />
                     <br />
                     {imagePreview && (
-                      <div className="text-center my-3  ">
+                      <div className="text-center my-3">
                         <img
                           src={imagePreview}
                           alt="Image preview"
@@ -144,7 +133,6 @@ const AdminAddCategory = () => {
                       </div>
                     )}
                   </div>
-                  <br />
                   <div className="card-footer text-center">
                     <input
                       type="submit"
@@ -152,15 +140,14 @@ const AdminAddCategory = () => {
                       value="Add Category"
                     />
                   </div>
-                  <br />
                 </div>
               </form>
             </div>
           </div>
-          {/*end row*/}
         </div>
       </div>
       <AdminFooter />
+      <ToastContainer />
     </>
   );
 };
