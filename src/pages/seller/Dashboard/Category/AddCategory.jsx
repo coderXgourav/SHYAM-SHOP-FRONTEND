@@ -48,9 +48,9 @@ const AddCategory = () => {
             </div>
             <div className="ms-auto">
               <div className="btn-group">
-                <a href="{{route('seller.viewCategoryPage')}}">
+                <a href="/seller/view-category">
                   <button type="button" className="btn btn-sm btn-primary">
-                    View Category
+                    View Requested Category
                   </button>
                 </a>
               </div>

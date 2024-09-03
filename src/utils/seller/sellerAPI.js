@@ -101,3 +101,19 @@ export const collectCategories = async () => {
     return { status: false, title: "technical issue", icon: "error" };
   }
 };
+
+export const deleteRequestCategory = async (id) => {
+  try {
+    const response = await axios.delete(
+      `${api_url}/seller/delete-category/${id}`,
+      {
+        headers: {
+          token: token,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    return { status: false, title: error.message, icon: "error" };
+  }
+};

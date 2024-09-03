@@ -48,7 +48,7 @@ const SellerHeader = () => {
                 <ul>
                   <li>
                     {" "}
-                    <a href="/request-category">
+                    <a href="/seller/request-category">
                       <i className="bx bx-radio-circle" />
                       Request Add Category
                     </a>
