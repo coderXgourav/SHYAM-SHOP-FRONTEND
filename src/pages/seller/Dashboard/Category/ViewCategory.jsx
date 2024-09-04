@@ -1,17 +1,39 @@
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
 import { useEffect, useState } from "react";
-import { collectCategories } from "../../../../utils/seller/sellerAPI";
+import {
+  collectCategories,
+  deleteRequestCategory,
+} from "../../../../utils/seller/sellerAPI";
+import { Button, Popconfirm } from "antd";
+import { toast, ToastContainer } from "react-toastify";
 
 const ViewCategory = () => {
+  const confirmDelete = async (id) => {
+    const result = await deleteRequestCategory(id);
+    toast[result.icon](result.title);
+    if (result.status) {
+      document.getElementById(id).style.display = "none";
+    }
+  };
+
   const [category, setCategory] = useState([]);
 
   useEffect(async () => {
     const result = await collectCategories();
     setCategory(result);
   }, [0]);
+  let no = 1;
 
-  console.log(category);
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    // Get day, month, and year
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = date.getUTCFullYear();
+    // Format date as d/M/Y
+    return `${day}/${month}/${year}`;
+  };
 
   return (
     <>
@@ -35,6 +57,7 @@ const ViewCategory = () => {
               </nav>
             </div>
           </div>
+
           {/*end breadcrumb*/}
           <div className="card">
             <div className="card-body">
@@ -52,11 +75,11 @@ const ViewCategory = () => {
 
                 <div className="ms-auto">
                   <a
-                    href="{{route('seller.addCategoryPage')}}"
+                    href="/seller/request-category"
                     className="btn btn-sm btn-primary mt-2 mt-lg-0"
                   >
                     <i className="bx bxs-plus-square" />
-                    Add New Order
+                    Request to add
                   </a>
                 </div>
               </div>
@@ -65,53 +88,64 @@ const ViewCategory = () => {
                   <thead className="table-light">
                     <tr>
                       <th>No</th>
-                      <th>Image</th>
                       <th>Category Name</th>
                       <th>Date</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {category.map((item) => (
-                      <tr>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <div>1</div>
-                            <div className="ms-2">
-                              <h6 className="mb-0 font-14"></h6>
+                    {category.length > 0 ? (
+                      category.map((item) => (
+                        <tr id={item._id}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div>{no++}</div>
+                              <div className="ms-2">
+                                <h6 className="mb-0 font-14"></h6>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <img
-                            src=""
-                            alt="category_image"
-                            className="img img-thumbnail"
-                            width="50px"
-                          />
-                        </td>
-                        <td>{item.request_category_name}</td>
-                        <td>12-02-2024</td>
-                        <td>
-                          <div className="d-flex order-actions">
-                            <a
-                              href="{{ route('seller.edit-category.sellerCategoryEdit',$category->category_id ) }}"
-                              className=""
-                            >
-                              <i className="bx bxs-edit" />
-                            </a>
-                            <a
-                              href="javascript:;"
-                              className="ms-3"
-                              onclick="confirmfunction({{$category->category_id}},'/seller/delete-category')"
-                            >
-                              <i className="bx bxs-trash" />
-                            </a>
-                          </div>
+                          </td>
+                          <td>{item.request_category_name}</td>
+                          <td>{formatDate(item.createdAt)}</td>
+                          <td>
+                            <div className="d-flex order-actions">
+                              <a
+                                href="{{ route('seller.edit-category.sellerCategoryEdit',$category->category_id ) }}"
+                                className=""
+                              >
+                                <i className="bx bxs-edit" />
+                              </a>
+                              <Popconfirm
+                                title="Delete Category Request ?"
+                                description="Removes a category from the request"
+                                onConfirm={() => {
+                                  confirmDelete(item._id);
+                                }}
+                              >
+                                <a
+                                  href="javascript:;"
+                                  className="ms-3"
+                                  style={{
+                                    color: "red",
+                                  }}
+                                >
+                                  <i className="bx bxs-trash" />
+                                </a>
+                              </Popconfirm>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          style={{ color: "red", textAlign: "center" }}
+                        >
+                          Requested Category Not Found !
                         </td>
                       </tr>
-                    ))}
-                    ;
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -119,6 +153,7 @@ const ViewCategory = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
       <SellerFooter />
     </>
   );

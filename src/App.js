@@ -34,7 +34,7 @@ function App() {
           path="/seller/change-credential"
           element={<UpdateCredential />}
         />
-        <Route path="/request-category" element={<AddCategory />} />
+        <Route path="/seller/request-category" element={<AddCategory />} />
         <Route path="/seller/view-category" element={<ViewCategory />} />
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/view-products" element={<ViewProducts />} />
