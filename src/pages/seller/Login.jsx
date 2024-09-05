@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { sellerLogin } from "../../utils/seller/sellerAPI";
 import { toast, ToastContainer } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [btnStatus, setBtnStatus] = useState(false);
+
   const isLogin = localStorage.getItem("sellerToken");
   if (isLogin) {
-    window.location = "/seller/dashboard";
+    const decodeToken = jwtDecode(isLogin);
+
+    if (decodeToken) {
+      window.location = "/seller/dashboard";
+    }
   }
+
   const [usernameEmail, setUsernameEmail] = useState("");
   const [password, setPassword] = useState("");
 
