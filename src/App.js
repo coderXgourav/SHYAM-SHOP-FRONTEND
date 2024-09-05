@@ -22,6 +22,7 @@ import AdminLogin from "./pages/admin/AdminLogin.jsx";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AdminRequestCategories from "./pages/admin/Dashboard/AdminRequestCategories.jsx";
+import UpdateProducts from "./pages/seller/Dashboard/Product/UpdateProducts.jsx";
 
 function App() {
   return (
@@ -38,6 +39,9 @@ function App() {
         <Route path="/seller/view-category" element={<ViewCategory />} />
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/view-products" element={<ViewProducts />} />
+
+        <Route path="/update-products/:id" element={<UpdateProducts />} />
+
 
         {/* ADMIN ROUTES  */}
 

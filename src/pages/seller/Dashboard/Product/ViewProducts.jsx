@@ -2,27 +2,13 @@ import axios from "axios";
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
 import { useEffect, useState } from "react";
+import { Popconfirm, message } from "antd"; // Import Ant Design components
 
 const ViewProducts = () => {
   const [productData, setProductData] = useState([]);
   const token = localStorage.getItem("sellerToken");
 
-  console.log('prod', productData);
-
-  // const getAllProducts = async () => {
-  //   try {
-  //     const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-all-products`, {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //         token: `${token}`,
-  //       }
-  //     });
-  //     console.log('Category Data:', res.data); // Log response for debugging
-  //     setProductData(res.data);
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
+  console.log('prodData',productData)
 
   const getAllProducts = async () => {
     try {
@@ -32,35 +18,34 @@ const ViewProducts = () => {
           token: `${token}`,
         },
       });
-  
-      console.log('Response Data:', res.data);
-  
-      // Assuming res.data contains an object with a key 'data' that is the array of products
-      const productsArray = res.data.data; // Replace 'data' with the actual key if different
-  
-      // Ensure the productsArray is indeed an array
-      if (productsArray && Array.isArray(productsArray)) {
-        // Extract specific fields from each product
-        const extractedProducts = productsArray.map(product => ({
-          description: product.description,
-          images: product.images,
-          price: product.price,
-          product_title: product.product_title,
-          quantity: product.quantity,
-        }));
-  
-        // Set the extracted data to productData state
-        setProductData(extractedProducts);
-      } else {
-        console.error('Expected an array but got:', typeof productsArray);
-      }
+      setProductData(res.data.data);
     } catch (error) {
       console.log(error.message);
     }
   };
-  
-  
-  
+
+  // Delete product function
+  const deleteProduct = async (productId) => {
+    try {
+      const res = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/seller/delete-products/${productId}`,
+        {
+          headers: {
+            token: `${token}`,
+          },
+        }
+      );
+      if (res.data.status === true) {
+        message.success("Product deleted successfully!");
+        getAllProducts(); // Refresh products after deletion
+      } else {
+        message.error("Failed to delete the product!");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error.message);
+      message.error("Error deleting product");
+    }
+  };
 
   useEffect(() => {
     getAllProducts();
@@ -71,7 +56,7 @@ const ViewProducts = () => {
       <SellerHeader />
       <div className="page-wrapper">
         <div className="page-content">
-          <div className="row">
+        <div className="row">
             <div className="col-12">
               <div className="card">
                 <div className="card-body">
@@ -138,6 +123,8 @@ const ViewProducts = () => {
                               </div>
                             </div>
                           </div>
+
+                          
                         </div>
                       </form>
                     </div>
@@ -145,29 +132,29 @@ const ViewProducts = () => {
                 </div>
               </div>
             </div>
-          </div>   
-          
-           {/* E:\samshop\server\uploads */}
+          </div> 
 
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 product-grid">
-            {productData?.map((product, index) => (
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 product-grid" style={{ transition: "all 1s ease-in-out" }}>
+            {productData.length!==0 ? (productData?.map((product, index) => (
               <div key={index} className="col">
-                <div className="card">
+                <div className="card" style={{ width: "200px", height: "400px" }}>
                   <img
-                    src={`${process.env.REACT_APP_API_URL}/${product?.images[0]}`}
-                    className="card-img-top"
-                    alt="Product"
+                    src={`${process.env.REACT_APP_API_URL}/upload/${product?.images[0]}`}
+                    className="card-img-top mx-auto"
+                    alt={product?.product_title || "Product Image"}
+                    style={{ width: "100%", height: "160px" }}
                   />
                   <div className="card-body">
                     <h6 className="card-title cursor-pointer">{product.product_title}</h6>
                     <p className="card-text" dangerouslySetInnerHTML={{ __html: product.description }}></p>
                     <div className="clearfix">
-                      <p className="mb-0 float-start"><strong>{product.quantity}</strong> in stock</p>
+                      <p className="mb-0 float-start">
+                        <strong>{product.quantity}</strong> in stock
+                      </p>
                       <p className="mb-0 float-end fw-bold">${product.price}</p>
                     </div>
                     <div className="d-flex align-items-center mt-3 fs-6">
                       <div className="cursor-pointer">
-                        {/* Replace with actual rating logic if available */}
                         <i className="bx bxs-star text-warning"></i>
                         <i className="bx bxs-star text-warning"></i>
                         <i className="bx bxs-star text-warning"></i>
@@ -176,12 +163,26 @@ const ViewProducts = () => {
                       </div>
                       <p className="mb-0 ms-auto">4.2 (182)</p>
                     </div>
+
+                    <div className="btns">
+                     <a href="/update-products"> <button className="prodEditBtn my-4">Edit</button></a>
+
+                      {/* Ant Design Popconfirm for deletion */}
+                      <Popconfirm
+                        title="Are you sure to delete this product?"
+                        onConfirm={() => deleteProduct(product._id)}
+                        onCancel={() => message.info("Delete action cancelled")}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                        <button className="prodDelBtn">Delete</button>
+                      </Popconfirm>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+            ))):(<p className="mx-auto">No Products Available</p>) }
           </div>
-
         </div>
       </div>
       <SellerFooter />
