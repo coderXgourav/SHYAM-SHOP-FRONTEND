@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const SellerHeader = () => {
-  const isLogin = localStorage.getItem("sellerToken");
-  if (!isLogin) {
-    window.location = "/seller/login";
-  }
+  const loginToken = localStorage.getItem("sellerToken");
+  const decoded = loginToken && jwtDecode(loginToken);
+
+  useEffect(() => {
+    if (!decoded) {
+      window.location = "/seller/login";
+    }
+  }, [0]);
 
   const sellerLogout = () => {
     localStorage.removeItem("sellerToken");
