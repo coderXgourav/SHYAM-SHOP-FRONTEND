@@ -149,6 +149,7 @@ const AdminAddCategory = () => {
                         onChange={handleImageChange}
                       />
                       <br />
+                      
                       {imagePreview && (
                         <div className="text-center my-3">
                           <img

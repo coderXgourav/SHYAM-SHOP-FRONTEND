@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import AdminFooter from "../../../components/admin/AdminFooter";
 import AdminHeader from "../../../components/admin/AdminHeader";
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 import Cookies from "js-cookie";
 
 const AdminViewSeller = () => {
-  const [sellers, setSellers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [sellersData, setSellersData] = useState({
+    countSeller: 0,
+    sellers: []
+  });
 
   useEffect(() => {
-    const token = Cookies.get("adminToken"); // Ensure correct token key
+    const token = Cookies.get("adminToken");
 
     axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-get-all-seller`, {
       headers: {
-        'Authorization': `${token}`, // Use `Bearer ${token}`
+        'Authorization': `${token}`,
       },
     })
     .then((response) => {
-      setSellers(response.data); // Directly use response.data
+      setSellersData(response.data); // Set the entire response data
     })
     .catch((error) => {
       console.error('Error fetching sellers:', error);
@@ -68,7 +73,7 @@ const AdminViewSeller = () => {
                 <table className="table mb-0">
                   <thead className="table-light">
                     <tr>
-                      <th>Seller ID</th>
+                      <th>No</th>
                       <th>Seller Name</th>
                       <th>Email</th>
                       <th>Date Joined</th>
@@ -76,19 +81,20 @@ const AdminViewSeller = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {sellers.length > 0 ? (
-                      sellers.map((seller) => (
+                    {sellersData.sellers.length > 0 ? (
+                      sellersData.sellers.map((seller,index) => (
                         <tr key={seller._id}>
+                            <td>{(currentPage - 1) * 10 + index + 1}</td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <div>
+                              {/* <div>
                                 <input
                                   className="form-check-input me-3"
                                   type="checkbox"
                                   value=""
                                   aria-label="..."
                                 />
-                              </div>
+                              </div> */}
                               <div className="ms-2">
                                 <h6 className="mb-0 font-14">{seller._id}</h6>
                               </div>
@@ -118,6 +124,9 @@ const AdminViewSeller = () => {
                     )}
                   </tbody>
                 </table>
+                {/* <div className="mt-3"> */}
+                  {/* <p>Total Sellers: {sellersData.countSeller}</p> Display total sellers */}
+                {/* </div> */}
               </div>
             </div>
           </div>

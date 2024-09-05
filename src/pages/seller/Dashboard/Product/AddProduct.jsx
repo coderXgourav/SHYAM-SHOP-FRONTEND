@@ -4,6 +4,7 @@ import SellerHeader from "../../../../components/seller/SellerHeader";
 import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
 import Quill from "quill";
 import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 const AddProduct = () => {
   const [btnStatus, setBtnStatus] = useState(false);
@@ -12,10 +13,33 @@ const AddProduct = () => {
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  // const [img, setImg] = useState([]);
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+
+  const [categoryData, setCategoryData] = useState([]);
+  const token = localStorage.getItem("sellerToken");
+
+  // Fetch category data from API
+  const getCategoryData = async (page = 1) => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-category`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `${token}`,
+        },
+        params: {
+          page,
+          limit: 20,
+        },
+      });
+      console.log('Category Data:', res.data); // Log response for debugging
+      setCategoryData(res.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   const handleFileChange = (e) => {
     const uploadImage = [];
@@ -35,22 +59,23 @@ const AddProduct = () => {
     event.preventDefault();
     setBtnStatus(true);
 
-    if (!title || !price || !quantity || !category || !desc) {
+    if (!title || !price || !quantity || !category || !subCategory || !desc) {
       setBtnStatus(false);
-      return toast["error"]("Please Fill input fields");
+      return toast.error("Please fill all input fields");
     } else {
       const formData = new FormData();
+      formData.append("category_id", category);
+      formData.append("sub_category_id", subCategory);
       formData.append("title", title);
       formData.append("price", price);
       formData.append("quantity", quantity);
       formData.append("category", category);
+      formData.append("sub_category", subCategory);
       formData.append("desc", desc);
 
       for (let file of selectedFile) {
         formData.append("image", file);
       }
-
-      // const data = { title, price, quantity, category, desc, selectedFile };
 
       const response = await sellerAddProduct(formData);
       setBtnStatus(false);
@@ -60,11 +85,16 @@ const AddProduct = () => {
         setPrice("");
         setQuantity("");
         setCategory("");
+        setSubCategory("");
         setSelectedFiles([]);
       }
       return toast[response?.data?.icon](response?.data?.title);
     }
   };
+
+  useEffect(() => {
+    getCategoryData();
+  }, []);
 
   const editorRef = useRef(null);
 
@@ -95,6 +125,13 @@ const AddProduct = () => {
       quill.off("text-change");
     };
   }, []);
+
+  // Filter subcategories based on the selected category
+  const selectedCategory = categoryData?.categories?.find(cat => cat._id === category);
+  const filteredSubCategories = selectedCategory ? selectedCategory.sub_category : [];
+
+  console.log('Selected Category:', selectedCategory);
+  console.log('Filtered Subcategories:', filteredSubCategories);
 
   return (
     <>
@@ -137,10 +174,7 @@ const AddProduct = () => {
                     <div className="col-lg-8">
                       <div className="border border-3 p-4 rounded">
                         <div className="mb-3">
-                          <label
-                            htmlFor="inputProductTitle"
-                            className="form-label"
-                          >
+                          <label htmlFor="inputProductTitle" className="form-label">
                             Product Title
                           </label>
                           <input
@@ -149,34 +183,20 @@ const AddProduct = () => {
                             id="inputProductTitle"
                             placeholder="Enter product title"
                             name="title"
-                            onChange={(e) => {
-                              setTitle(e.target.value);
-                            }}
+                            onChange={(e) => setTitle(e.target.value)}
                             value={title}
                           />
                         </div>
                         <div className="mb-3">
                           <label htmlFor>Description</label>
-                          <div>
-                            {/* <div
-                              id="editor-container"
-                              style={{ height: "200px" }}
-                            ></div> */}
-                            <div
-                              ref={editorRef}
-                              id="editor-container"
-                              style={{ height: "200px" }}
-                            ></div>
-                          </div>
+                          <div ref={editorRef} id="editor-container" style={{ height: "200px" }}></div>
                         </div>
 
                         <label htmlFor>
                           Choose Product images{" "}
-                          <span className="text text-primary text-sm">
-                            ( Select up to 4 Images )
-                          </span>{" "}
+                          <span className="text text-primary text-sm">( Select up to 4 Images )</span>
                         </label>
-                        <div className="mb-3 border border-3  rounded p-4">
+                        <div className="mb-3 border border-3 rounded p-4">
                           <input
                             type="file"
                             accept="image/*"
@@ -206,108 +226,108 @@ const AddProduct = () => {
                       <div className="border border-3 p-4 rounded">
                         <div className="row g-3">
                           <div className="col-md-6">
-                            <label
-                              htmlFor="inputCostPerPrice"
-                              className="form-label"
-                            >
+                            <label htmlFor="inputCostPerPrice" className="form-label">
                               Price
                             </label>
                             <input
                               type="number"
                               className="form-control"
-                              id="inputStarPoints"
-                              placeholder="Product Price "
-                              name="quantity"
-                              onChange={(e) => {
-                                setPrice(e.target.value);
-                              }}
+                              id="inputCostPerPrice"
+                              placeholder="Product Price"
+                              name="price"
+                              onChange={(e) => setPrice(e.target.value)}
                               value={price}
                             />
                           </div>
                           <div className="col-md-6">
-                            <label
-                              htmlFor="inputStarPoints"
-                              className="form-label"
-                            >
+                            <label htmlFor="inputStarPoints" className="form-label">
                               Quantity
                             </label>
                             <input
                               type="number"
                               className="form-control"
                               id="inputStarPoints"
-                              placeholder="Quantity of products in stock "
+                              placeholder="Quantity of products in stock"
                               name="quantity"
-                              onChange={(e) => {
-                                setQuantity(e.target.value);
-                              }}
+                              onChange={(e) => setQuantity(e.target.value)}
                               value={quantity}
                             />
                           </div>
                           <div className="col-12">
-                            <label
-                              htmlFor="inputProductType"
-                              className="form-label"
-                            >
-                              Product Type
+                            <label htmlFor="inputProductType" className="form-label">
+                              Category Type
                             </label>
                             <select
                               className="form-select"
                               id="inputProductType"
                               name="category"
                               onChange={(e) => {
-                                setCategory(e.target.value);
+                                const selectedCategoryId = e.target.value;
+                                setCategory(selectedCategoryId);
+                                setSubCategory(""); // Clear sub-category when category changes
                               }}
                               value={category}
                             >
-                              <option value="{{$item->category_id}}">
-                                Category
-                              </option>
-                              <option value="1">test</option>
+                              <option value="">Select Category</option>
+                              {categoryData?.categories?.map((cat) => (
+                                <option key={cat._id} value={cat._id}>
+                                  {cat.name}
+                                </option>
+                              ))}
                             </select>
-                          </div>
 
-                          <div className="col-12">
-                            <div className="d-grid mt-3">
-                              <button
-                                type="submit"
-                                className="btn btn-primary"
-                                id="submitBtn"
-                                disabled={btnStatus}
-                              >
-                                Save Product
-                              </button>
-                              <button
-                                className="btn btn-primary"
-                                type="button"
-                                disabled
-                                id="loadingBtn"
-                                style={{ display: "none", width: "100%" }}
-                              >
-                                {" "}
-                                <span
-                                  className="spinner-border spinner-border-sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                />
-                                <span className="visually-hidden">
-                                  Loading...
-                                </span>
-                              </button>
-                            </div>
+                            <label htmlFor="inputSubCategoryType" className="form-label my-3">
+                              Sub-category Type
+                            </label>
+                            <select
+                              className="form-select"
+                              id="inputSubCategoryType"
+                              name="sub_category"
+                              onChange={(e) => setSubCategory(e.target.value)}
+                              value={subCategory}
+                              disabled={!category}
+                              style={{color:"#222"}} // Disable if no category is selected
+                            >
+                              <option value="">Select Sub-category</option>
+                              {filteredSubCategories.length > 0 ? (
+                                filteredSubCategories.map((sub) => (
+                                  <option key={sub._id} value={sub._id}>
+                                    {sub.sub}
+                                  </option>
+                                ))
+                              ) : (
+                                <option value="" disabled>
+                                  No subcategory available
+                                </option>
+                              )}
+                            </select>
                           </div>
                         </div>
                       </div>
+
+                      <div className="d-flex justify-content-center mt-3">
+                  <button
+                    type="submit"
+                    className="btn btn-primary me-2"
+                    disabled={btnStatus}
+                  >
+                    {btnStatus ? "Adding..." : "Add Product"}
+                  </button>
+                </div>
+
+
+
                     </div>
                   </div>
-                  {/*end row*/}
                 </div>
+               
               </div>
             </div>
           </form>
         </div>
       </div>
-      <ToastContainer />
       <SellerFooter />
+      <ToastContainer />
     </>
   );
 };
