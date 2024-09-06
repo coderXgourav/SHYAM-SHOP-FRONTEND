@@ -5,6 +5,7 @@ import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
 import Quill from "quill";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const UpdateProducts = () => {
   const [btnStatus, setBtnStatus] = useState(false);
@@ -13,6 +14,9 @@ const UpdateProducts = () => {
 
   
   const [productData, setProductData] = useState([]);
+  const [updatedProduct,setUpdatedProduct]=useState([])
+  const [singleProduct,setSingleProduct]=useState([])
+
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -24,8 +28,11 @@ const UpdateProducts = () => {
   const [categoryData, setCategoryData] = useState([]);
   const token = localStorage.getItem("sellerToken");
 
+  const {id}=useParams()
 
 console.log('ppppp',productData)
+console.log('upd',updatedProduct)
+console.log('singleprod',singleProduct)
 
   const getAllProducts = async () => {
     try {
@@ -35,7 +42,40 @@ console.log('ppppp',productData)
           token: `${token}`,
         },
       });
-      setProductData(res.data.data);
+
+            
+            setProductData(res.data.data);
+
+
+
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+
+  const getSingleProducts = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-single-product/${id}`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+      const product = res.data.data;
+     
+
+      setSingleProduct(product);
+
+      
+            // Pre-fill the form with product data
+            setTitle(product.product_title);
+            setDesc(product.description);
+            setPrice(product.price);
+            setQuantity(product.quantity);
+            setCategory(product.category_id);
+            setSubCategory(product.sub_category_id);
+            setPreviews(product.images);
     } catch (error) {
       console.log(error.message);
     }
@@ -43,6 +83,19 @@ console.log('ppppp',productData)
 
 
 
+  const updateProducts = async () => {
+    try {
+      const res = await axios.put(`${process.env.REACT_APP_API_URL}/seller/update-produts/${id}`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+      setUpdatedProduct(res.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
 
   // Fetch category data from API
@@ -119,6 +172,8 @@ console.log('ppppp',productData)
   useEffect(() => {
     getCategoryData();
     getAllProducts();
+    updateProducts();
+    getSingleProducts();
   }, []);
 
   const editorRef = useRef(null);

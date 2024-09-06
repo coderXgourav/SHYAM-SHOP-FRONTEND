@@ -3,6 +3,7 @@ import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
 import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
 import Quill from "quill";
+import "quill/dist/quill.snow.css"; 
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
@@ -14,6 +15,9 @@ const UpdateProducts = () => {
 
   
   const [productData, setProductData] = useState([]);
+  const [updatedProduct,setUpdatedProduct]=useState([])
+  const [singleProduct,setSingleProduct]=useState([])
+
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -25,38 +29,188 @@ const UpdateProducts = () => {
   const [categoryData, setCategoryData] = useState([]);
   const token = localStorage.getItem("sellerToken");
 
-  const { id } = useParams()
+  const {id}=useParams()
 
 console.log('ppppp',productData)
+console.log('upd',updatedProduct)
+console.log('singleprod',singleProduct)
+console.log('idd',id)
+console.log('categ6556ory',category)
+console.log('sub-c5656at',subCategory)
 
-  // Fetch all products
-  const getAllProducts = async (id) => {
+  const getAllProducts = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-product/${id}`, {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-all-products`, {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
           token: `${token}`,
         },
       });
-      const product = res.data.data;
-     
-      setProductData(product);
 
-      // Pre-fill the form with product data
-      setTitle(product.product_title);
-      setDesc(product.description);
-      setPrice(product.price);
-      setQuantity(product.quantity);
-      setCategory(product.category_id);
-      setSubCategory(product.sub_category_id);
-      setPreviews(product.images);
+            
+            setProductData(res.data.data);
+
+
+
     } catch (error) {
       console.log(error.message);
     }
   };
 
 
+  const getSingleProducts = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-single-product/${id}`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+      
+      const product = res.data.data;
+     
+      const products= res.data;
+      setSingleProduct(product);
 
+      
+            // Pre-fill the form with product data
+            setTitle(product.product_title);
+            setDesc(product.description);
+            setPrice(product.price);
+            setQuantity(product.quantity);
+
+            setCategory(product.category_id?._id);
+            setSubCategory(product.sub_category_id);
+            
+
+
+      // Pre-fill image previews from previously uploaded images
+      setPreviews(product.images.map((img) => `${process.env.REACT_APP_API_URL}/upload/${img}`)); 
+      console.log('preview',previews)
+
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+
+  // Handle product update
+  const productUpdateHandler = async (event) => {
+    event.preventDefault();
+    setBtnStatus(true);
+
+    const formData = new FormData();
+
+    if (title) formData.append("title", title);
+    if (price) formData.append("price", price);
+    if (quantity) formData.append("quantity", quantity);
+    if (desc) formData.append("desc", desc);
+    if (category) formData.append("category_id", category);
+    if (subCategory) formData.append("sub_category_id", subCategory);
+
+    if (selectedFile.length > 0) {
+      for (let file of selectedFile) {
+        formData.append("files", file);
+      }
+    }
+
+    if (selectedFile.length === 0 && previews.length > 0) {
+      previews.forEach((preview, idx) => {
+        const imageName = preview.split('/').pop(); // Extract filename from URL
+        formData.append(`existing_images[${idx}]`, imageName);
+      });
+    }
+
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_URL}/seller/update-products/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            token: `${token}`,
+          },
+        }
+      );
+
+      setBtnStatus(false);
+
+      setUpdatedProduct(response.data)
+
+      if (response.data.status) {
+        setTitle("");
+        setDesc("");
+        setPrice("");
+        setQuantity("");
+        setCategory("");
+        setSubCategory("");
+        setSelectedFiles([]);
+        setPreviews([]);
+        toast.success(response.data.title);
+      } else {
+        toast.error("Failed to update product");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("An error occurred while updating the product");
+      setBtnStatus(false);
+    }
+  };
+
+  
+
+
+  // const productUpdateHandler = async (event) => {
+  //   event.preventDefault();
+  //   setBtnStatus(true);
+  
+  //   // Create a FormData object
+  //   const formData = new FormData();
+  //   formData.append("category_id", category);
+  //   formData.append("sub_category_id", subCategory);
+  //   formData.append("title", title);
+  //   formData.append("price", price);
+  //   formData.append("quantity", quantity);
+  //   formData.append("desc", desc);
+  
+  //   // Add newly selected images (if any)
+  //   if (selectedFile.length > 0) {
+  //     for (let file of selectedFile) {
+  //       formData.append("image", file);
+  //     }
+  //   }
+  
+  //   try {
+  //     const response = await axios.put(`${process.env.REACT_APP_API_URL}/seller/update-products/${id}`, formData, {
+  //       headers: {
+  //         "Content-Type": "multipart/form-data",
+  //         token: `${token}`,
+  //       },
+  //     });
+  
+  //     setBtnStatus(false);
+  
+  //     if (response.data.status) {
+  //       // Clear form fields if necessary (optional)
+  //       setTitle("");
+  //       setDesc("");
+  //       setPrice("");
+  //       setQuantity("");
+  //       setCategory("");
+  //       setSubCategory("");
+  //       setSelectedFiles([]);
+  //       toast.success("Product updated successfully");
+  //     } else {
+  //       toast.error("Failed to update product");
+  //     }
+  
+  //   } catch (error) {
+  //     console.error("Error updating product:", error);
+  //     toast.error("An error occurred while updating the product");
+  //     setBtnStatus(false);
+  //   }
+  // };
+  
 
 
   // Fetch category data from API
@@ -81,9 +235,9 @@ console.log('ppppp',productData)
 
   const handleFileChange = (e) => {
     const uploadImage = [];
-    const images = e.target.files;
+    const files  = e.target.files;
 
-    for (let items of images) {
+    for (let items of files ) {
       uploadImage.push(items);
     }
 
@@ -93,53 +247,23 @@ console.log('ppppp',productData)
     setPreviews(newPreviews);
   };
 
-  const productAddHandler = async (event) => {
-    event.preventDefault();
-    setBtnStatus(true);
 
-    if (!title || !price || !quantity || !category || !subCategory || !desc) {
-      setBtnStatus(false);
-      return toast.error("Please fill all input fields");
-    } else {
-      const formData = new FormData();
-      formData.append("category_id", category);
-      formData.append("sub_category_id", subCategory);
-      formData.append("title", title);
-      formData.append("price", price);
-      formData.append("quantity", quantity);
-      formData.append("category", category);
-      formData.append("sub_category", subCategory);
-      formData.append("desc", desc);
-
-      for (let file of selectedFile) {
-        formData.append("image", file);
-      }
-
-      const response = await sellerAddProduct(formData);
-      setBtnStatus(false);
-      if (response.data.status) {
-        setTitle("");
-        setDesc("");
-        setPrice("");
-        setQuantity("");
-        setCategory("");
-        setSubCategory("");
-        setSelectedFiles([]);
-      }
-      return toast[response?.data?.icon](response?.data?.title);
-    }
-  };
 
   useEffect(() => {
     getCategoryData();
-    getAllProducts(id);
+    getAllProducts();
+    // updateProducts();
+    getSingleProducts();
   }, []);
 
+ 
+
+
   const editorRef = useRef(null);
+  const quillRef = useRef(null); 
 
   useEffect(() => {
-    // Initialize Quill editor
-    const quill = new Quill(editorRef.current, {
+    quillRef.current = new Quill(editorRef.current, {
       theme: "snow",
       modules: {
         toolbar: [
@@ -155,15 +279,23 @@ console.log('ppppp',productData)
     });
 
     // Update the desc state whenever the content changes
-    quill.on("text-change", () => {
-      setDesc(quill.root.innerHTML);
+    quillRef.current.on("text-change", () => {
+      setDesc(quillRef.current.root.innerHTML);
     });
 
-    // Cleanup on unmount
     return () => {
-      quill.off("text-change");
+      quillRef.current.off("text-change");
     };
   }, []);
+
+  // Set the initial content of the Quill editor when desc is available
+  useEffect(() => {
+    if (quillRef.current && desc) {
+      quillRef.current.root.innerHTML = desc;
+    }
+  }, [desc]);
+
+
 
   // Filter subcategories based on the selected category
   const selectedCategory = categoryData?.categories?.find(cat => cat._id === category);
@@ -203,7 +335,7 @@ console.log('ppppp',productData)
             </div>
           </div>
 
-          <form onSubmit={productAddHandler} encType="multipart/form-data">
+          <form onSubmit={productUpdateHandler} encType="multipart/form-data">
             <div className="card">
               <div className="card-body p-4">
                 <h5 className="card-title">Update Product</h5>
@@ -239,7 +371,7 @@ console.log('ppppp',productData)
                           <input
                             type="file"
                             accept="image/*"
-                            name="image"
+                            name="files"
                             multiple
                             onChange={handleFileChange}
                             style={{ marginBottom: "10px" }}

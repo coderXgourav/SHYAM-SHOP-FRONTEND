@@ -165,7 +165,7 @@ const ViewProducts = () => {
                     </div>
 
                     <div className="btns">
-                     <a href="/update-products"> <button className="prodEditBtn my-4">Edit</button></a>
+                     <a href={`/update-products/${product._id}`}> <button className="prodEditBtn my-4">Edit</button></a>
 
                       {/* Ant Design Popconfirm for deletion */}
                       <Popconfirm
