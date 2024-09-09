@@ -1,105 +1,213 @@
+// import { toast, ToastContainer } from "react-toastify";
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
-import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
-import Quill from "quill";
-import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { message } from "antd"; // Import Ant Design components
+import Quill from "quill";
+import "quill/dist/quill.snow.css";
+import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { message,Spin } from "antd"; // Import Ant Design components
+import Cookies from "js-cookie";
+import AdminHeader from "../../../../components/admin/AdminHeader";
+import AdminFooter from "../../../../components/admin/AdminFooter";
 
-const AddProduct = () => {
+
+
+const AdminUpdateProducts = () => {
   const [btnStatus, setBtnStatus] = useState(false);
   const [selectedFile, setSelectedFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
-
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
-
   const [categoryData, setCategoryData] = useState([]);
-  const token = localStorage.getItem("sellerToken");
+  const [singleProduct, setSingleProduct] = useState([]);
 
-  // Fetch category data from API
-  const getCategoryData = async (page = 1) => {
+  const [loading, setLoading] = useState(false); // Added loading state
+
+
+  const token = localStorage.getItem("sellerToken");
+  const { id } = useParams();
+
+
+  console.log('id',id)
+
+  useEffect(() => {
+    getCategoryData();
+    getSingleProducts();
+  }, []);
+
+  const getCategoryData = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-category`, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `${token}`,
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/admin/admin-category`,
+        {
+            
+                headers: {
+                  'Authorization': `${Cookies.get('adminToken')}`,
+                },
+              
         },
-        params: {
-          page,
-          limit: 20,
-        },
-      });
-      console.log('Category Data:', res.data); // Log response for debugging
+      );
       setCategoryData(res.data);
     } catch (error) {
-      console.log(error.message);
+      console.log("Error fetching categories:", error.message);
+    }
+  };
+
+  const getSingleProducts = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/admin/admin-get-single-product/${id}`,
+        {
+            
+                headers: {
+                  'Authorization': `${Cookies.get('adminToken')}`,
+                },
+              
+        }
+      );
+      const product = res.data.data;
+      setSingleProduct(product);
+      setTitle(product.product_title);
+      setDesc(product.description);
+      setPrice(product.price);
+      setQuantity(product.quantity);
+      setCategory(product.category_id?._id);
+      setSubCategory(product.sub_category_id);
+      setPreviews(
+        product.images.map(
+          (img) => `${process.env.REACT_APP_API_URL}/upload/${img}`
+        )
+      );
+    } catch (error) {
+      console.log("Error fetching product:", error.message);
     }
   };
 
   const handleFileChange = (e) => {
+    const files = e.target.files;
     const uploadImage = [];
-    const images = e.target.files;
-
-    for (let items of images) {
-      uploadImage.push(items);
+    for (let i = 0; i < files.length; i++) {
+      uploadImage.push(files[i]);
     }
-
     setSelectedFiles(uploadImage);
 
     const newPreviews = uploadImage.map((file) => URL.createObjectURL(file));
     setPreviews(newPreviews);
   };
 
-  const productAddHandler = async (event) => {
+
+  
+
+
+  const productUpdateHandler = async (event) => {
     event.preventDefault();
     setBtnStatus(true);
+    setLoading(true); // Set loading to true when fetching starts
 
+
+    // Validate form fields
     if (!title || !price || !quantity || !category || !subCategory || !desc) {
-      setBtnStatus(false);
-      return message.error("Please fill all input fields");
-    } else {
-      const formData = new FormData();
-      formData.append("category_id", category);
-      formData.append("sub_category_id", subCategory);
-      formData.append("product_title", title);
-      formData.append("price", price);
-      formData.append("quantity", quantity);
-      formData.append("sub_category", subCategory);
-      formData.append("description", desc);
-
-      for (let file of selectedFile) {
-        formData.append("image", file);
-      }
-
-      const response = await sellerAddProduct(formData);
-      setBtnStatus(false);
-      if (response.data.status) {
-        setTitle("");
-        setDesc("");
-        setPrice("");
-        setQuantity("");
-        setCategory("");
-        setSubCategory("");
-        setSelectedFiles([]);
-      }
-      return message.success("Product Added Successfully");
+        setBtnStatus(false);
+        return message.error("Please fill all input fields");
     }
-  };
 
-  useEffect(() => {
-    getCategoryData();
-  }, []);
+    const formData = new FormData();
 
+    // Append form fields
+    formData.append("product_title", title);
+    formData.append("price", price);
+    formData.append("quantity", quantity);
+    formData.append("description", desc);
+    formData.append("category_id", category);
+    formData.append("sub_category_id", subCategory);
+
+    // Append new images if any
+    if (selectedFile.length > 0) {
+        selectedFile.forEach((file) => {
+            formData.append("image", file);
+        });
+    }
+
+    // Append existing image filenames for the backend to keep (if applicable)
+    if (previews.length > 0) {
+        previews.forEach((preview) => {
+            const imageName = preview.split("/").pop(); // Extract filename from URL
+            formData.append("images", imageName); // Use a separate key to pass existing images
+        });
+    }
+
+    try {
+        console.log("Product Title:", title);
+        console.log("Price:", price);
+        console.log("Quantity:", quantity);
+        console.log("Description:", desc);
+        console.log("Category:", category);
+        console.log("SubCategory:", subCategory);
+        console.log("Selected Files:", selectedFile);
+        console.log("Previews:", previews);
+
+        console.log("FormData contents:");
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
+
+        const response = await axios.put(
+            `${process.env.REACT_APP_API_URL}/admin/admin-update-products/${id}`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `${Cookies.get('adminToken')}`,
+                  },
+            }
+        );
+
+        message.success("Product updated successfully")
+
+        // console.log("API Response:", response);
+      
+        setTimeout(() => {
+            window.location.reload()
+  
+          }, 200);
+
+        setBtnStatus(false);
+
+        if (response.data.status) {
+            // Resetting form fields
+            // setTitle("");
+            // setDesc("");
+            // setPrice("");
+            // setQuantity("");
+            // setCategory("");
+            // setSubCategory("");
+            // setSelectedFiles([]);
+            // setPreviews([]);
+            // toast.success(response.data.title);
+        } else {
+            message.error("Failed to update product");
+        }
+    } catch (error) {
+        console.error("Error updating product:", error.response ? error.response.data : error.message);
+        message.error("An error occurred while updating the product");
+        setBtnStatus(false);
+    }
+    finally {
+      setLoading(false); // Set loading to false when fetching completes
+    }
+};
+
+
+  
   const editorRef = useRef(null);
+  const quillRef = useRef(null);
 
   useEffect(() => {
-    // Initialize Quill editor
-    const quill = new Quill(editorRef.current, {
+    quillRef.current = new Quill(editorRef.current, {
       theme: "snow",
       modules: {
         toolbar: [
@@ -114,27 +222,30 @@ const AddProduct = () => {
       },
     });
 
-    // Update the desc state whenever the content changes
-    quill.on("text-change", () => {
-      setDesc(quill.root.innerHTML);
+    quillRef.current.on("text-change", () => {
+      setDesc(quillRef.current.root.innerHTML);
     });
 
-    // Cleanup on unmount
     return () => {
-      quill.off("text-change");
+      quillRef.current.off("text-change");
     };
   }, []);
+  useEffect(() => {
+    if (quillRef.current && desc !== quillRef.current.root.innerHTML) {
+      quillRef.current.root.innerHTML = desc;
+    }
+  }, [desc]);
 
-  // Filter subcategories based on the selected category
-  const selectedCategory = categoryData?.categories?.find(cat => cat._id === category);
-  const filteredSubCategories = selectedCategory ? selectedCategory.sub_category : [];
-
-  console.log('Selected Category:', selectedCategory);
-  console.log('Filtered Subcategories:', filteredSubCategories);
+  const selectedCategory = categoryData?.categories?.find(
+    (cat) => cat._id === category
+  );
+  const filteredSubCategories = selectedCategory
+    ? selectedCategory.sub_category
+    : [];
 
   return (
     <>
-      <SellerHeader />
+      <AdminHeader />
       <div className="page-wrapper">
         <div className="page-content">
           <div className="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
@@ -147,14 +258,14 @@ const AddProduct = () => {
                     </a>
                   </li>
                   <li className="breadcrumb-item active" aria-current="page">
-                    Add Product
+                    Update Product
                   </li>
                 </ol>
               </nav>
             </div>
             <div className="ms-auto">
               <div className="btn-group">
-                <a href="{{route('seller.viewProduct')}}">
+                <a href="#">
                   <button type="button" className="btn-sm btn btn-primary">
                     View Products
                   </button>
@@ -163,17 +274,27 @@ const AddProduct = () => {
             </div>
           </div>
 
-          <form onSubmit={productAddHandler} encType="multipart/form-data">
+
+          {loading ? (
+                  <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
+                    <Spin size="large" />
+                  </div>
+                ) : (
+
+<form onSubmit={productUpdateHandler} encType="multipart/form-data">
             <div className="card">
               <div className="card-body p-4">
-                <h5 className="card-title">Add New Product</h5>
+                <h5 className="card-title">Update Product</h5>
                 <hr />
                 <div className="form-body mt-4">
                   <div className="row">
                     <div className="col-lg-8">
                       <div className="border border-3 p-4 rounded">
                         <div className="mb-3">
-                          <label htmlFor="inputProductTitle" className="form-label">
+                          <label
+                            htmlFor="inputProductTitle"
+                            className="form-label"
+                          >
                             Product Title
                           </label>
                           <input
@@ -187,23 +308,28 @@ const AddProduct = () => {
                           />
                         </div>
                         <div className="mb-3">
-                          <label htmlFor>Description</label>
-                          <div ref={editorRef} id="editor-container" style={{ height: "200px" }}></div>
+                          <label htmlFor="editor-container">Description</label>
+                          <div
+                            ref={editorRef}
+                            id="editor-container"
+                            style={{ height: "200px" }}
+                          ></div>
                         </div>
 
-                        <label htmlFor>
+                        <label htmlFor="product-images">
                           Choose Product images{" "}
-                          <span className="text text-primary text-sm">( Select up to 4 Images )</span>
+                          <span className="text text-primary text-sm">
+                            ( Select up to 4 Images )
+                          </span>
                         </label>
                         <div className="mb-3 border border-3 rounded p-4">
                           <input
                             type="file"
                             accept="image/*"
-                            name="image"
+                            name="files"
                             multiple
                             onChange={handleFileChange}
                             style={{ marginBottom: "10px" }}
-                            required
                           />
                         </div>
                         {previews.map((preview, index) => (
@@ -225,7 +351,10 @@ const AddProduct = () => {
                       <div className="border border-3 p-4 rounded">
                         <div className="row g-3">
                           <div className="col-md-6">
-                            <label htmlFor="inputCostPerPrice" className="form-label">
+                            <label
+                              htmlFor="inputCostPerPrice"
+                              className="form-label"
+                            >
                               Price
                             </label>
                             <input
@@ -239,7 +368,10 @@ const AddProduct = () => {
                             />
                           </div>
                           <div className="col-md-6">
-                            <label htmlFor="inputStarPoints" className="form-label">
+                            <label
+                              htmlFor="inputStarPoints"
+                              className="form-label"
+                            >
                               Quantity
                             </label>
                             <input
@@ -253,7 +385,10 @@ const AddProduct = () => {
                             />
                           </div>
                           <div className="col-12">
-                            <label htmlFor="inputProductType" className="form-label">
+                            <label
+                              htmlFor="inputProductType"
+                              className="form-label"
+                            >
                               Category Type
                             </label>
                             <select
@@ -275,7 +410,10 @@ const AddProduct = () => {
                               ))}
                             </select>
 
-                            <label htmlFor="inputSubCategoryType" className="form-label my-3">
+                            <label
+                              htmlFor="inputSubCategoryType"
+                              className="form-label my-3"
+                            >
                               Sub-category Type
                             </label>
                             <select
@@ -285,7 +423,7 @@ const AddProduct = () => {
                               onChange={(e) => setSubCategory(e.target.value)}
                               value={subCategory}
                               disabled={!category}
-                              style={{color:"#222"}} // Disable if no category is selected
+                              style={{ color: "#222" }}
                             >
                               <option value="">Select Sub-category</option>
                               {filteredSubCategories.length > 0 ? (
@@ -305,30 +443,29 @@ const AddProduct = () => {
                       </div>
 
                       <div className="d-flex justify-content-center mt-3">
-                  <button
-                    type="submit"
-                    className="btn btn-primary me-2"
-                    disabled={btnStatus}
-                  >
-                    {btnStatus ? "Adding..." : "Add Product"}
-                  </button>
-                </div>
-
-
-
+                        <button
+                          type="submit"
+                          className="btn btn-primary me-2"
+                          disabled={btnStatus}
+                        >
+                          {btnStatus ? "Updating..." : "Update Product"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-               
               </div>
             </div>
           </form>
+                )}
+
+          
         </div>
       </div>
-      <SellerFooter />
-      
+      <AdminFooter />
+      {/* <ToastContainer /> */}
     </>
   );
 };
 
-export default AddProduct;
+export default AdminUpdateProducts;

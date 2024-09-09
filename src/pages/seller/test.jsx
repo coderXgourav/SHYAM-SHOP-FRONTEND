@@ -1,15 +1,22 @@
+import { toast, ToastContainer } from "react-toastify";
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
 import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
 import Quill from "quill";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { message } from "antd"; // Import Ant Design components
+import { useParams } from "react-router-dom";
 
-const AddProduct = () => {
+const UpdateProducts = () => {
   const [btnStatus, setBtnStatus] = useState(false);
   const [selectedFile, setSelectedFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
+
+  
+  const [productData, setProductData] = useState([]);
+  const [updatedProduct,setUpdatedProduct]=useState([])
+  const [singleProduct,setSingleProduct]=useState([])
+
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -20,6 +27,76 @@ const AddProduct = () => {
 
   const [categoryData, setCategoryData] = useState([]);
   const token = localStorage.getItem("sellerToken");
+
+  const {id}=useParams()
+
+console.log('ppppp',productData)
+console.log('upd',updatedProduct)
+console.log('singleprod',singleProduct)
+
+  const getAllProducts = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-all-products`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+
+            
+            setProductData(res.data.data);
+
+
+
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+
+  const getSingleProducts = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-single-product/${id}`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+      const product = res.data.data;
+     
+
+      setSingleProduct(product);
+
+      
+            // Pre-fill the form with product data
+            setTitle(product.product_title);
+            setDesc(product.description);
+            setPrice(product.price);
+            setQuantity(product.quantity);
+            setCategory(product.category_id);
+            setSubCategory(product.sub_category_id);
+            setPreviews(product.images);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+
+
+  const updateProducts = async () => {
+    try {
+      const res = await axios.put(`${process.env.REACT_APP_API_URL}/seller/update-produts/${id}`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+      setUpdatedProduct(res.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
 
   // Fetch category data from API
   const getCategoryData = async (page = 1) => {
@@ -34,7 +111,7 @@ const AddProduct = () => {
           limit: 20,
         },
       });
-      console.log('Category Data:', res.data); // Log response for debugging
+      console.log('update Data:', res.data); // Log response for debugging
       setCategoryData(res.data);
     } catch (error) {
       console.log(error.message);
@@ -61,16 +138,17 @@ const AddProduct = () => {
 
     if (!title || !price || !quantity || !category || !subCategory || !desc) {
       setBtnStatus(false);
-      return message.error("Please fill all input fields");
+      return toast.error("Please fill all input fields");
     } else {
       const formData = new FormData();
       formData.append("category_id", category);
       formData.append("sub_category_id", subCategory);
-      formData.append("product_title", title);
+      formData.append("title", title);
       formData.append("price", price);
       formData.append("quantity", quantity);
+      formData.append("category", category);
       formData.append("sub_category", subCategory);
-      formData.append("description", desc);
+      formData.append("desc", desc);
 
       for (let file of selectedFile) {
         formData.append("image", file);
@@ -87,12 +165,15 @@ const AddProduct = () => {
         setSubCategory("");
         setSelectedFiles([]);
       }
-      return message.success("Product Added Successfully");
+      return toast[response?.data?.icon](response?.data?.title);
     }
   };
 
   useEffect(() => {
     getCategoryData();
+    getAllProducts();
+    updateProducts();
+    getSingleProducts();
   }, []);
 
   const editorRef = useRef(null);
@@ -147,7 +228,7 @@ const AddProduct = () => {
                     </a>
                   </li>
                   <li className="breadcrumb-item active" aria-current="page">
-                    Add Product
+                    Update Product
                   </li>
                 </ol>
               </nav>
@@ -166,7 +247,7 @@ const AddProduct = () => {
           <form onSubmit={productAddHandler} encType="multipart/form-data">
             <div className="card">
               <div className="card-body p-4">
-                <h5 className="card-title">Add New Product</h5>
+                <h5 className="card-title">Update Product</h5>
                 <hr />
                 <div className="form-body mt-4">
                   <div className="row">
@@ -326,9 +407,9 @@ const AddProduct = () => {
         </div>
       </div>
       <SellerFooter />
-      
+      <ToastContainer />
     </>
   );
 };
 
-export default AddProduct;
+export default UpdateProducts;

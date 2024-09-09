@@ -38,3 +38,59 @@ box-shadow: 0 0 10px #525050;
 .deleteBtn:hover{
   box-shadow: 0 0 10px #807e7e;
   }
+
+
+  /* edit product button */
+
+  /* From Uiverse.io by suda-code */ 
+.prodEditBtn {
+  padding: 6px 22px;
+  border: 0;
+  border-radius: 100px;
+  background-color: #2ba8fb;
+  color: #ffffff;
+  font-weight: Bold;
+  transition: all 0.5s;
+  -webkit-transition: all 0.5s;
+}
+
+.prodEditBtn:hover {
+  background-color: #6fc5ff;
+  box-shadow: 0 0 20px #6fc5ff50;
+  transform: scale(1.1);
+}
+
+.prodEditBtn:active {
+  background-color: #3d94cf;
+  transition: all 0.25s;
+  -webkit-transition: all 0.25s;
+  box-shadow: none;
+  transform: scale(0.98);
+}
+
+
+.prodDelBtn {
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 100px;
+  margin-left: 10px;
+  background-color: orangered;
+  color: #ffffff;
+  font-weight: Bold;
+  transition: all 0.5s;
+  -webkit-transition: all 0.5s;
+}
+
+.prodDelBtn:hover {
+  background-color: orangered;
+  box-shadow: 0 0 20px #6fc5ff50;
+  transform: scale(1.1);
+}
+
+.prodDelBtn:active {
+  background-color: #3d94cf;
+  transition: all 0.25s;
+  -webkit-transition: all 0.25s;
+  box-shadow: none;
+  transform: scale(0.98);
+}

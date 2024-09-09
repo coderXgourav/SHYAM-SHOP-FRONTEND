@@ -23,6 +23,8 @@ import AddBlog from "../src/pages/admin/Dashboard/Blog/AddBlog.jsx";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AdminRequestCategories from "./pages/admin/Dashboard/AdminRequestCategories.jsx";
+import UpdateProducts from "./pages/seller/Dashboard/Product/UpdateProducts.jsx";
+import AdminUpdateProducts from "./pages/admin/Dashboard/AdminProduct/AdminUpdateProduct.jsx";
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/view-products" element={<ViewProducts />} />
 
+        <Route path="/update-products/:id" element={<UpdateProducts />} />
+
         {/* ADMIN ROUTES  */}
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -52,7 +56,6 @@ function App() {
         <Route path="/admin-add-seller" element={<AdminAddSeller />} />
         <Route path="/admin-view-seller" element={<AdminViewSeller />} />
         <Route path="/admin-refund" element={<AdminRefund />} />
-        <Route path="/admin/add-blog" element={<AddBlog />} />
 
         <Route
           path="/admin-request-category"
