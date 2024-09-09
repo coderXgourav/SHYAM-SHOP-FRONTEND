@@ -19,6 +19,7 @@ import AdminAddSeller from "./pages/admin/Dashboard/AdminAddSeller";
 import AdminViewSeller from "./pages/admin/Dashboard/AdminViewSeller";
 import AdminRefund from "./pages/admin/Dashboard/AdminRefund.jsx";
 import AdminLogin from "./pages/admin/AdminLogin.jsx";
+import AddBlog from "../src/pages/admin/Dashboard/Blog/AddBlog.jsx";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AdminRequestCategories from "./pages/admin/Dashboard/AdminRequestCategories.jsx";
@@ -51,12 +52,12 @@ function App() {
         <Route path="/admin-add-seller" element={<AdminAddSeller />} />
         <Route path="/admin-view-seller" element={<AdminViewSeller />} />
         <Route path="/admin-refund" element={<AdminRefund />} />
+        <Route path="/admin/add-blog" element={<AddBlog />} />
 
-        <Route path="/admin-request-category" element={<AdminRequestCategories />} />
-
-
-
-
+        <Route
+          path="/admin-request-category"
+          element={<AdminRequestCategories />}
+        />
       </Routes>
     </>
   );
