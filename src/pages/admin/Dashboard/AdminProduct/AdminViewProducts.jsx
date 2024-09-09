@@ -1,14 +1,71 @@
-import AdminFooter from "../../../../components/admin/AdminFooter";
-import AdminHeader from "../../../../components/admin/AdminHeader";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Popconfirm, message, Spin } from "antd"; // Import Ant Design components
+import AdminHeader from '../../../../components/admin/AdminHeader'
+import AdminFooter from '../../../../components/admin/AdminFooter'
+import Cookies from "js-cookie";
+
 
 const AdminViewProducts = () => {
+  const [productData, setProductData] = useState([]);
+  const [loading, setLoading] = useState(false); // Added loading state
+
+
+  const token = localStorage.getItem("sellerToken");
+
+  console.log('prodData',productData)
+
+  const getAllProducts = async () => {
+    setLoading(true); // Set loading to true when fetching starts
+
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-get-all-products`, {
+        headers: {
+          'Authorization': `${Cookies.get('adminToken')}`,
+        },
+      });
+      setProductData(res.data.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+    finally {
+      setLoading(false); // Set loading to false when fetching completes
+    }
+  };
+
+  // Delete product function
+  const deleteProduct = async (productId) => {
+    try {
+      const res = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/admin/admin-delete-product/${productId}`,
+        {
+          headers: {
+            'Authorization': `${Cookies.get('adminToken')}`,
+          },
+        }
+      );
+      if (res.data.status === true) {
+        message.success("Product deleted successfully!");
+        getAllProducts(); // Refresh products after deletion
+      } else {
+        message.error("Failed to delete the product!");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error.message);
+      message.error("Error deleting product");
+    }
+  };
+
+  useEffect(() => {
+    getAllProducts();
+  }, []);
+
   return (
     <>
       <AdminHeader />
       <div className="page-wrapper">
         <div className="page-content">
-
-          <div className="row">
+        <div className="row">
             <div className="col-12">
               <div className="card">
                 <div className="card-body">
@@ -18,7 +75,7 @@ const AdminViewProducts = () => {
                         <i className="bx bxs-plus-square"></i>New Product
                       </a>
                     </div>
-                    
+
                     <div className="col-lg-9 col-xl-10">
                       <form className="float-lg-end">
                         <div className="row row-cols-lg-2 row-cols-xl-auto g-2">
@@ -75,6 +132,8 @@ const AdminViewProducts = () => {
                               </div>
                             </div>
                           </div>
+
+                          
                         </div>
                       </form>
                     </div>
@@ -82,42 +141,64 @@ const AdminViewProducts = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> 
 
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 product-grid">
-            {/* Repeated product card items */}
-            {[...Array(5)].map((_, index) => (
-              <div key={index} className="col">
-                <div className="card">
-                  <img src={`assets/images/products/0${index + 1}.png`} className="card-img-top" alt="Product" />
-                  <div className="">
-                    <div className="position-absolute top-0 end-0 m-3 product-discount"><span className="">-10%</span></div>
+          {loading ? (
+                  <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
+                    <Spin size="large" />
                   </div>
-                  <div className="card-body">
-                    <h6 className="card-title cursor-pointer">Nest Shaped Chair</h6>
-                    <div className="clearfix">
-                      <p className="mb-0 float-start"><strong>134</strong> Sales</p>
-                      <p className="mb-0 float-end fw-bold">
-                        <span className="me-2 text-decoration-line-through text-secondary">$350</span>
-                        <span>$240</span>
-                      </p>
-                    </div>
-                    <div className="d-flex align-items-center mt-3 fs-6">
-                      <div className="cursor-pointer">
-                        <i className="bx bxs-star text-warning"></i>
-                        <i className="bx bxs-star text-warning"></i>
-                        <i className="bx bxs-star text-warning"></i>
-                        <i className="bx bxs-star text-warning"></i>
-                        <i className="bx bxs-star text-secondary"></i>
+                ) : (
+                  <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 product-grid" style={{ transition: "all 1s ease-in-out" }}>
+                  {productData.length!==0 ? (productData?.map((product, index) => (
+                    <div key={index} className="col">
+                      <div className="card" style={{ width: "200px", height: "400px" }}>
+                        <img
+                          src={`${process.env.REACT_APP_API_URL}/upload/${product?.images[0]}`}
+                          className="card-img-top mx-auto"
+                          alt={product?.product_title || "Product Image"}
+                          style={{ width: "100%", height: "160px" }}
+                        />
+                        <div className="card-body">
+                          <h6 className="card-title cursor-pointer">{product.product_title}</h6>
+                          <p className="card-text" dangerouslySetInnerHTML={{ __html: product.description }}></p>
+                          <div className="clearfix">
+                            <p className="mb-0 float-start">
+                              <strong>{product.quantity}</strong> in stock
+                            </p>
+                            <p className="mb-0 float-end fw-bold">${product.price}</p>
+                          </div>
+                          <div className="d-flex align-items-center mt-3 fs-6">
+                            <div className="cursor-pointer">
+                              <i className="bx bxs-star text-warning"></i>
+                              <i className="bx bxs-star text-warning"></i>
+                              <i className="bx bxs-star text-warning"></i>
+                              <i className="bx bxs-star text-warning"></i>
+                              <i className="bx bxs-star text-secondary"></i>
+                            </div>
+                            <p className="mb-0 ms-auto">4.2 (182)</p>
+                          </div>
+                        
+                          <div className="btns">
+                           <a href={`/admin-update-products/${product._id}`}> <button className="prodEditBtn my-4">Edit</button></a>
+      
+                            {/* Ant Design Popconfirm for deletion */}
+                            <Popconfirm
+                              title="Are you sure to delete this product?"
+                              onConfirm={() => deleteProduct(product._id)}
+                              onCancel={() => message.info("Delete action cancelled")}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <button className="prodDelBtn">Delete</button>
+                            </Popconfirm>
+                          </div>
+                        </div>
                       </div>
-                      <p className="mb-0 ms-auto">4.2(182)</p>
                     </div>
-                  </div>
+                  ))):(<p className="mx-auto">No Products Available</p>) }
                 </div>
-              </div>
-            ))}
-          </div>
-
+                )}
+        
         </div>
       </div>
       <AdminFooter />

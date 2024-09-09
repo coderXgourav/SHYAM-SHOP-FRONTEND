@@ -1,10 +1,10 @@
-import { toast, ToastContainer } from "react-toastify";
 import SellerFooter from "../../../../components/seller/SellerFooter";
 import SellerHeader from "../../../../components/seller/SellerHeader";
 import { sellerAddProduct } from "../../../../utils/seller/sellerAPI";
 import Quill from "quill";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { message } from "antd"; // Import Ant Design components
 
 const AddProduct = () => {
   const [btnStatus, setBtnStatus] = useState(false);
@@ -61,17 +61,16 @@ const AddProduct = () => {
 
     if (!title || !price || !quantity || !category || !subCategory || !desc) {
       setBtnStatus(false);
-      return toast.error("Please fill all input fields");
+      return message.error("Please fill all input fields");
     } else {
       const formData = new FormData();
       formData.append("category_id", category);
       formData.append("sub_category_id", subCategory);
-      formData.append("title", title);
+      formData.append("product_title", title);
       formData.append("price", price);
       formData.append("quantity", quantity);
-      formData.append("category", category);
       formData.append("sub_category", subCategory);
-      formData.append("desc", desc);
+      formData.append("description", desc);
 
       for (let file of selectedFile) {
         formData.append("image", file);
@@ -88,7 +87,7 @@ const AddProduct = () => {
         setSubCategory("");
         setSelectedFiles([]);
       }
-      return toast[response?.data?.icon](response?.data?.title);
+      return message.success("Product Added Successfully");
     }
   };
 
@@ -327,7 +326,7 @@ const AddProduct = () => {
         </div>
       </div>
       <SellerFooter />
-      <ToastContainer />
+      
     </>
   );
 };
