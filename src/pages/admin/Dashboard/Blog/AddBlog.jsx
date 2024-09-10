@@ -49,9 +49,9 @@ const AddBlog = () => {
     return () => {
       quill.off("text-change");
     };
-  }, []);
+  }, [0]);
 
-  const blogSubmit = (event) => {
+  const blogSubmit = async (event) => {
     setBtnStatus(true);
 
     event.preventDefault();
@@ -62,8 +62,21 @@ const AddBlog = () => {
       }, 3000);
     } else {
       const data = { blogTopic, subTopic, title, subTitle, desc, image };
-      blogUpload(data);
+      const result = await blogUpload(data);
+      console.log(result);
+
       setBtnStatus(false);
+      toast[result.icon](result.title);
+      if (result.status) {
+        setBlogTopic("");
+        setSubTopic("");
+        setTitle("");
+        setSubTitle("");
+        setDesc("");
+        setImage("");
+        setPreview("");
+        setBtnStatus("");
+      }
     }
   };
 

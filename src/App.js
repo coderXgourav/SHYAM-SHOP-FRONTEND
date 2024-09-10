@@ -29,6 +29,7 @@ import AdminRequestCategories from "./pages/admin/Dashboard/AdminRequestCategori
 import UpdateProducts from "./pages/seller/Dashboard/Product/UpdateProducts.jsx";
 import AdminUpdateProducts from "./pages/admin/Dashboard/AdminProduct/AdminUpdateProduct.jsx";
 import NotFoundPage from "./pages/admin/NotFoundPage.jsx";
+import ViewBlog from "./pages/admin/Dashboard/Blog/ViewBlog.jsx";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
           element={<AdminRequestCategories />}
         />
         <Route path="/admin/add-blog" element={<AddBlog />} />
+        <Route path="/admin/view-blogs" element={<ViewBlog />} />
       </Routes>
     </>
   );

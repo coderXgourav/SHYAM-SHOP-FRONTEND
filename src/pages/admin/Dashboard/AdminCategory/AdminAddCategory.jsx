@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 import AdminFooter from "../../../../components/admin/AdminFooter";
 import AdminHeader from "../../../../components/admin/AdminHeader";
 import Cookies from "js-cookie";
 import { toast, ToastContainer, Bounce } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 const AdminAddCategory = () => {
-  const [categoryName, setCategoryName] = useState('');
+  const [categoryName, setCategoryName] = useState("");
   const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [imagePreview, setImagePreview] = useState("");
   const [subCategories, setSubCategories] = useState([]);
-  const [newSubCategory, setNewSubCategory] = useState('');
+  const [newSubCategory, setNewSubCategory] = useState("");
 
   const handleCategoryNameChange = (e) => {
     setCategoryName(e.target.value);
@@ -19,24 +19,27 @@ const AdminAddCategory = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    
+
     // Optional: Check file size on client-side
     const maxSize = 32 * 1024 * 1024; // 32MB
     if (file.size > maxSize) {
-      toast.error('File size exceeds the 32MB limit. Please upload a smaller file.', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-      });
+      toast.error(
+        "File size exceeds the 32MB limit. Please upload a smaller file.",
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        }
+      );
       return;
     }
-    
+
     setImage(file);
 
     // Create a URL for the selected image file and update the preview state
@@ -56,7 +59,7 @@ const AdminAddCategory = () => {
   const addSubCategory = () => {
     if (newSubCategory.trim()) {
       setSubCategories([...subCategories, { sub: newSubCategory }]);
-      setNewSubCategory('');
+      setNewSubCategory("");
     }
   };
 
@@ -64,11 +67,11 @@ const AdminAddCategory = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('name', categoryName);
-    formData.append('image', image);
+    formData.append("name", categoryName);
+    formData.append("image", image);
 
     if (subCategories.length > 0) {
-      formData.append('sub_category', JSON.stringify(subCategories)); // Convert sub_category array to JSON string
+      formData.append("sub_category", JSON.stringify(subCategories)); // Convert sub_category array to JSON string
     }
 
     try {
@@ -77,13 +80,13 @@ const AdminAddCategory = () => {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${Cookies.get('adminToken')}`,
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${Cookies.get("adminToken")}`,
           },
         }
       );
 
-      toast.success('Category added successfully!', {
+      toast.success("Category added successfully!", {
         position: "top-center",
         autoClose: 3000,
         hideProgressBar: true,
@@ -96,14 +99,14 @@ const AdminAddCategory = () => {
       });
 
       // Reset form fields
-      setCategoryName('');
+      setCategoryName("");
       setImage(null);
-      setImagePreview('');
+      setImagePreview("");
       setSubCategories([]);
-      
-      console.log('Category created successfully', response.data);
+
+      console.log("Category created successfully", response.data);
     } catch (error) {
-      toast.error('Failed to create category. Please try again.', {
+      toast.error("Failed to create category. Please try again.", {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -114,7 +117,10 @@ const AdminAddCategory = () => {
         theme: "light",
         transition: Bounce,
       });
-      console.error('Failed to create category', error.response?.data || error.message);
+      console.error(
+        "Failed to create category",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -143,24 +149,32 @@ const AdminAddCategory = () => {
                     />
                     <br />
                     <input
-                        className="form-control"
-                        type="file"
-                        required
-                        onChange={handleImageChange}
-                      />
-                      <br />
-                      
-                      {imagePreview && (
-                        <div className="text-center my-3">
-                          <img
-                            src={imagePreview}
-                            alt="Image preview"
-                            style={{ maxWidth: '50%', height: 'auto' }}
-                          />
-                        </div>
-                      )}
+                      className="form-control"
+                      type="file"
+                      required
+                      onChange={handleImageChange}
+                    />
+                    <br />
 
-                    <div className="mb-3" style={{display:"flex",alignItems:"center",gap:"1rem",height:"5vh"}}>
+                    {imagePreview && (
+                      <div className="text-center my-3">
+                        <img
+                          src={imagePreview}
+                          alt="Image preview"
+                          style={{ maxWidth: "50%", height: "auto" }}
+                        />
+                      </div>
+                    )}
+
+                    <div
+                      className="mb-3"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1rem",
+                        height: "5vh",
+                      }}
+                    >
                       <input
                         className="form-control"
                         type="text"
@@ -171,7 +185,14 @@ const AdminAddCategory = () => {
                       <button
                         type="button"
                         className="btn btn-secondary  my-3"
-                        onClick={addSubCategory} style={{display:"flex",alignItems:"center",justifyContent:"center",height:"5vh",fontSize:"20px"}}
+                        onClick={addSubCategory}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          height: "5vh",
+                          fontSize: "20px",
+                        }}
                       >
                         +
                       </button>
