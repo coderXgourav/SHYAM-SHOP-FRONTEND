@@ -1,3 +1,6 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+// SELLER
 import Dashboard from "./pages/seller/Dashboard/Dashboard";
 import AddCategory from "./pages/seller/Dashboard/Category/AddCategory";
 import ViewCategory from "./pages/seller/Dashboard/Category/ViewCategory";
@@ -9,6 +12,7 @@ import UpdateCredential from "./pages/seller/Dashboard/Credential/UpdateCredenti
 import "react-toastify/dist/ReactToastify.css";
 
 // ADMIN
+import AdminLoginPage from "./pages/admin/Login.jsx";
 import AdminDashboard from "./pages/admin/Dashboard/AdminDashboard";
 import AdminAddCategory from "./pages/admin/Dashboard/AdminCategory/AdminAddCategory";
 import AdminViewCategory from "./pages/admin/Dashboard/AdminCategory/AdminViewCategory";
@@ -21,10 +25,10 @@ import AdminRefund from "./pages/admin/Dashboard/AdminRefund.jsx";
 import AdminLogin from "./pages/admin/AdminLogin.jsx";
 import AddBlog from "../src/pages/admin/Dashboard/Blog/AddBlog.jsx";
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AdminRequestCategories from "./pages/admin/Dashboard/AdminRequestCategories.jsx";
 import UpdateProducts from "./pages/seller/Dashboard/Product/UpdateProducts.jsx";
 import AdminUpdateProducts from "./pages/admin/Dashboard/AdminProduct/AdminUpdateProduct.jsx";
+import NotFoundPage from "./pages/admin/NotFoundPage.jsx";
 
 function App() {
   return (
@@ -46,8 +50,8 @@ function App() {
 
         {/* ADMIN ROUTES  */}
 
+        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin-add-category" element={<AdminAddCategory />} />
         <Route path="/admin-view-category" element={<AdminViewCategory />} />
         <Route path="/admin-add-product" element={<AdminAddProduct />} />
@@ -56,11 +60,12 @@ function App() {
         <Route path="/admin-add-seller" element={<AdminAddSeller />} />
         <Route path="/admin-view-seller" element={<AdminViewSeller />} />
         <Route path="/admin-refund" element={<AdminRefund />} />
-
+        <Route path="*" element={<NotFoundPage />} />
         <Route
           path="/admin-request-category"
           element={<AdminRequestCategories />}
         />
+        <Route path="/admin/add-blog" element={<AddBlog />} />
       </Routes>
     </>
   );

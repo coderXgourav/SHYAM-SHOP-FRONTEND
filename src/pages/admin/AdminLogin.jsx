@@ -3,8 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { toast, ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Ensure to include this for styling
-
-const AdminLogin = () => {
+const Login = () => {
   const isLogin = Cookies.get("adminToken");
   const [btnStatus, setBtnStatus] = useState(false);
   const [usernameEmail, setUsernameEmail] = useState("");
@@ -77,53 +76,35 @@ const AdminLogin = () => {
 
   return (
     <>
-      <ToastContainer />
       <div className="wrapper">
-        <div className="section-authentication-cover">
-          <div className="">
-            <div className="row g-0">
-              <div className="col-12 col-xl-7 col-xxl-8 auth-cover-left align-items-center justify-content-center d-none d-xl-flex">
-                <div className="card shadow-none bg-transparent shadow-none rounded-0 mb-0">
+        <div className="section-authentication-signin d-flex align-items-center justify-content-center my-5 my-lg-0">
+          <div className="container">
+            <div className="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
+              <div className="col mx-auto">
+                <div className="card mb-0">
                   <div className="card-body">
-                    <img
-                      src="/assets/images/login-images/login-cover.svg"
-                      className="img-fluid auth-img-cover-login"
-                      width={650}
-                      alt=""
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-xl-5 col-xxl-4 auth-cover-right align-items-center justify-content-center">
-                <div className="card rounded-0 m-3 shadow-none bg-transparent mb-0">
-                  <div className="card-body p-sm-5">
-                    <div className="">
+                    <div className="p-4">
                       <div className="mb-3 text-center">
-                        <img src="/logo.png" width="150px" alt="" />
+                        <img src="/logo.png" width={150} alt="" />
                       </div>
-                      <hr />
                       <div className="text-center mb-4">
-                        <h5 className=""> Sign in </h5>
+                        <h5 className=""> Admin</h5>
                         <p className="mb-0">Please log in to your account</p>
                       </div>
                       <div className="form-body">
-                        <form
-                          className="row g-3"
-                          id="formSubmit"
-                          onSubmit={adminLoginHandler}
-                        >
+                        <form className="row g-3" onSubmit={adminLoginHandler}>
                           <div className="col-12">
                             <label
                               htmlFor="inputEmailAddress"
                               className="form-label"
                             >
-                              Email or Username
+                              Email
                             </label>
                             <input
-                              type="text"
+                              type="email"
                               className="form-control"
+                              id="inputEmailAddress"
                               placeholder="jhon@example.com"
-                              required=""
                               onChange={(e) => setUsernameEmail(e.target.value)}
                               value={usernameEmail}
                             />
@@ -147,13 +128,15 @@ const AdminLogin = () => {
                               <input
                                 type="password"
                                 className="form-control border-end-0"
+                                id="inputChoosePassword"
+                                defaultValue={12345678}
                                 placeholder="Enter Password"
-                                required=""
                                 minLength={4}
                                 maxLength={30}
                                 onChange={(e) => setPassword(e.target.value)}
                                 value={password}
                               />
+
                               <a
                                 href="javascript:;"
                                 className="input-group-text bg-transparent"
@@ -183,27 +166,20 @@ const AdminLogin = () => {
                             </div>
                           </div>
                           <div className="col-md-6 text-end">
-                            <a href="#">Forgot Password ?</a>
+                            {" "}
+                            <a href="auth-basic-forgot-password.html">
+                              Forgot Password ?
+                            </a>
                           </div>
                           <div className="col-12">
                             <div className="d-grid">
                               <button
                                 type="submit"
-                                className="btn btn-primary"
-                                id="submitBtn"
                                 disabled={btnStatus}
+                                className="btn btn-primary"
                               >
                                 Sign in
                               </button>
-                            </div>
-                          </div>
-
-                          <div className="col-12">
-                            <div className="text-center">
-                              <p className="mb-0">
-                                Don't have an account yet?{" "}
-                                <a href="/admin/signup">Sign up here</a>
-                              </p>
                             </div>
                           </div>
                         </form>
@@ -216,9 +192,9 @@ const AdminLogin = () => {
             {/*end row*/}
           </div>
         </div>
+        <ToastContainer />
       </div>
     </>
   );
 };
-
-export default AdminLogin;
+export default Login;
