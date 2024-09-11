@@ -91,7 +91,6 @@ const AdminHeader = () => {
                       Request Categories
                     </a>
                   </li>
-                  
                 </ul>
               </li>
               <li>
@@ -221,7 +220,30 @@ const AdminHeader = () => {
                   </li>
                 </ul>
               </li>
-              Review
+              <li>
+                <a href="javascript:;" className="has-arrow">
+                  <div className="parent-icon">
+                    <i className="bx bx-category" />
+                  </div>
+                  <div className="menu-title">Blog Management </div>
+                </a>
+                <ul>
+                  <li>
+                    {" "}
+                    <a href="/admin/add-blog">
+                      <i className="bx bx-radio-circle" />
+                      Post New Blog
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/admin/view-blogs">
+                      <i className="bx bx-radio-circle" />
+                      View Blogs
+                    </a>
+                  </li>
+                </ul>
+              </li>
+
               <li>
                 <a className="has-arrow" href="javascript:;">
                   <div className="parent-icon">
