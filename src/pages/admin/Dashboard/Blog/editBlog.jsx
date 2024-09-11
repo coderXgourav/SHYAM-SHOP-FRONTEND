@@ -3,9 +3,17 @@ import AdminFooter from "../../../../components/admin/AdminFooter";
 import { useEffect, useState, useRef } from "react";
 import Quill from "quill";
 import { toast, ToastContainer } from "react-toastify";
-import { blogUpload } from "../../../../utils/admin/adminAPI";
+import {
+  blogUpdate,
+  fetchSingleBlog,
+  blogImageUpdate,
+} from "../../../../utils/admin/adminAPI";
+import { useParams } from "react-router-dom";
 
-const AddBlog = () => {
+const EditBlog = () => {
+  const { id } = useParams();
+
+  const [blogId, setBlogId] = useState(null);
   const [blogTopic, setBlogTopic] = useState("");
   const [subTopic, setSubTopic] = useState("");
   const [title, setTitle] = useState("");
@@ -14,16 +22,32 @@ const AddBlog = () => {
   const [image, setImage] = useState("");
   const [preview, setPreview] = useState("");
   const [btnStatus, setBtnStatus] = useState(false);
+  const [updateImage, setUpdateImage] = useState(null);
+  const [imageBtn, setImageBtn] = useState(false);
 
   const imageChange = (event) => {
     const image = event.target.files[0];
-    setImage(image);
+    setUpdateImage(image);
     setPreview(URL.createObjectURL(image));
   };
 
   const editorRef = useRef(null);
 
-  useEffect(() => {
+  useEffect(async () => {
+    const blog = await fetchSingleBlog(id);
+    // setData(blog);
+
+    setBlogTopic(blog.blog_topic);
+    setSubTopic(blog.topic_description);
+    setTitle(blog.blog_title);
+    setSubTitle(blog.blog_sub_title);
+    setDesc(blog.blog_description);
+    setImage(blog.blog_image);
+    setDesc(blog.blog_description);
+    setBlogId(blog._id);
+
+    console.log(blog);
+
     // Initialize Quill editor
     const quill = new Quill(editorRef.current, {
       theme: "snow",
@@ -44,12 +68,20 @@ const AddBlog = () => {
     quill.on("text-change", () => {
       setDesc(quill.root.innerHTML);
     });
-
     // Cleanup on unmount
     return () => {
       quill.off("text-change");
     };
-  }, [0]);
+  }, [id]);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const quill = Quill.find(editorRef.current); // Get the Quill instance associated with the editorRef
+      if (quill) {
+        quill.root.innerHTML = desc;
+      }
+    }
+  }, [desc]);
 
   const blogSubmit = async (event) => {
     setBtnStatus(true);
@@ -61,8 +93,15 @@ const AddBlog = () => {
         setBtnStatus(false);
       }, 3000);
     } else {
-      const data = { blogTopic, subTopic, title, subTitle, desc, image };
-      const result = await blogUpload(data);
+      const data = {
+        blogId,
+        blogTopic,
+        subTopic,
+        title,
+        subTitle,
+        desc,
+      };
+      const result = await blogUpdate(data);
       console.log(result);
 
       setBtnStatus(false);
@@ -76,6 +115,14 @@ const AddBlog = () => {
         setBtnStatus("");
       }
     }
+  };
+
+  const imageUpdate = async (image, blogId) => {
+    setImageBtn(true);
+    const result = await blogImageUpdate(image, blogId);
+    toast[result.icon](result.title);
+    // console.log(result);
+    setImageBtn(false);
   };
 
   return (
@@ -101,7 +148,11 @@ const AddBlog = () => {
             <div className="ms-auto">
               <div className="btn-group">
                 <a href="/admin/view-blogs">
-                  <button type="button" className="btn-sm btn btn-primary">
+                  <button
+                    type="button"
+                    className="btn-sm btn btn-primary"
+                    disabled={imageBtn}
+                  >
                     View Blogs
                   </button>
                 </a>
@@ -112,7 +163,7 @@ const AddBlog = () => {
           <form onSubmit={blogSubmit}>
             <div className="card">
               <div className="card-body p-4">
-                <h5 className="card-title">Post Blog</h5>
+                <h5 className="card-title">Update Blog</h5>
                 <hr />
                 <div className="form-body mt-4">
                   <div className="row">
@@ -194,6 +245,12 @@ const AddBlog = () => {
                           Blog Image
                         </label>
                         <div className="mt-2 border border-3 rounded p-4">
+                          <p className="text-dark">
+                            if you want to update blog image : select image and
+                            click the
+                            <span className="text-primary"> update image </span>
+                            button
+                          </p>
                           <input
                             type="file"
                             name="blogImage"
@@ -203,10 +260,25 @@ const AddBlog = () => {
                           />
                           <div>
                             {preview ? (
-                              <img src={preview} width={"400px"} />
+                              <img src={preview} width={"250px"} alt="iamge" />
                             ) : (
-                              ""
+                              <img
+                                src={`http://localhost:5000/uploads/${image}`}
+                                alt="image2"
+                                width={"250px"}
+                              />
                             )}
+                          </div>
+                          <div>
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm mt-2"
+                              onClick={() => {
+                                imageUpdate(updateImage, id);
+                              }}
+                            >
+                              Update Image
+                            </button>
                           </div>
                         </div>
                         <div className="mt-3">
@@ -224,7 +296,7 @@ const AddBlog = () => {
                           id="submitBtn"
                           disabled={btnStatus}
                         >
-                          Post Blog
+                          Update Blog
                         </button>
                       </div>
                     </div>
@@ -242,4 +314,4 @@ const AddBlog = () => {
   );
 };
 
-export default AddBlog;
+export default EditBlog;

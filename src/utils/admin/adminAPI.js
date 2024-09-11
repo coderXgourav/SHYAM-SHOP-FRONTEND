@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 const api_url = process.env.REACT_APP_API_URL;
 const token = Cookies.get("adminToken");
 
@@ -35,8 +36,77 @@ export const getBlogs = async () => {
 
 export const callDeleteBlog = async (id) => {
   try {
-    console.log(id);
+    const response = await fetch(`${api_url}/admin/delete-blog/${id}`, {
+      method: "DELETE",
+      body: { id: id },
+      headers: {
+        authorization: token,
+      },
+    });
+    return await response.json();
   } catch (error) {
-    return error.message;
+    return { status: false, title: error.message, icon: "error" };
+  }
+};
+
+export const fetchSingleBlog = async (id) => {
+  const result = await fetch(`${api_url}/admin/get-blog/${id}`, {
+    method: "GET",
+    headers: {
+      authorization: token,
+    },
+  });
+  try {
+    return await result.json();
+  } catch (error) {
+    return { status: false, title: "technical issue", icon: "error" };
+  }
+};
+
+export const blogUpdate = async (data) => {
+  console.log(data);
+  try {
+    const response = await axios.put(`${api_url}/admin/update-blog`, data, {
+      headers: {
+        authorization: token,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return { status: false, title: error.message, icon: "error" };
+  }
+};
+export const blogImageUpdate = async (image, blogId) => {
+  if (image === null) {
+    return { status: false, title: "Please choose image first", icon: "error" };
+  }
+  try {
+    const response = await axios.put(
+      `${api_url}/admin/update-blog-image`,
+      { image, blogId },
+      {
+        headers: {
+          authorization: token,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    return { status: false, title: error.message, icon: "error" };
+  }
+};
+
+export const getBlogData = async (id) => {
+  const result = await fetch(`${api_url}/admin/get-blog/${id}`, {
+    method: "GET",
+    headers: {
+      authorization: token,
+    },
+  });
+  try {
+    return await result.json();
+  } catch (error) {
+    return { status: false, title: "technical issue", icon: "error" };
   }
 };

@@ -30,6 +30,8 @@ import UpdateProducts from "./pages/seller/Dashboard/Product/UpdateProducts.jsx"
 import AdminUpdateProducts from "./pages/admin/Dashboard/AdminProduct/AdminUpdateProduct.jsx";
 import NotFoundPage from "./pages/admin/NotFoundPage.jsx";
 import ViewBlog from "./pages/admin/Dashboard/Blog/ViewBlog.jsx";
+import EdtiBlog from "../src/pages/admin/Dashboard/Blog/editBlog.jsx";
+import ViewSingleBlog from "./pages/admin/Dashboard/Blog/ViewSingleBlog.jsx";
 
 function App() {
   return (
@@ -68,6 +70,8 @@ function App() {
         />
         <Route path="/admin/add-blog" element={<AddBlog />} />
         <Route path="/admin/view-blogs" element={<ViewBlog />} />
+        <Route path="/admin/edit-blog/:id" element={<EdtiBlog />} />
+        <Route path="/admin/view-blog/:id" element={<ViewSingleBlog />} />
       </Routes>
     </>
   );

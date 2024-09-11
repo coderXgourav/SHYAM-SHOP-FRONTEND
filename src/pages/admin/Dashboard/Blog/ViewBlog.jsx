@@ -3,25 +3,34 @@ import AdminFooter from "../../../../components/admin/AdminFooter";
 import AdminHeader from "../../../../components/admin/AdminHeader";
 import { getBlogs, callDeleteBlog } from "../../../../utils/admin/adminAPI";
 import { Button, Modal } from "antd";
+import { toast, ToastContainer } from "react-toastify";
 
 const ViewBlog = () => {
   const [blogs, setBlogs] = useState([]);
 
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [modalText, setModalText] = useState("Content of the modal");
+  const [modalText, setModalText] = useState(
+    "Are you sure to delete the blog ?"
+  );
 
-  const showModal = (id) => {
+  const showModal = () => {
     setOpen(true);
-    console.log(id);
   };
-  const handleOk = () => {
-    setModalText("The modal will be closed after two seconds");
+  const handleOk = async (id) => {
+    setModalText("Are you sure to delete the blog ?");
     setConfirmLoading(true);
+    const result = await callDeleteBlog(id);
+    toast[result.icon](result.title);
+
+    if (result.status) {
+      document.getElementById(id).style.display = "none";
+    }
+
     setTimeout(() => {
       setOpen(false);
       setConfirmLoading(false);
-    }, 2000);
+    }, 1000);
   };
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -32,10 +41,6 @@ const ViewBlog = () => {
     new Promise((resolve) => {
       setTimeout(() => resolve(null), 3000);
     });
-
-  const deleteBlog = (blogId) => {
-    callDeleteBlog(blogId);
-  };
 
   useEffect(async () => {
     const blogs = await getBlogs();
@@ -65,7 +70,7 @@ const ViewBlog = () => {
               </div>
               <div className="ms-auto">
                 <div className="btn-group">
-                  <a href="/admin/add/blog">
+                  <a href="/admin/add-blog">
                     <button type="button" className="btn btn-primary btn-sm">
                       Post New Blog
                     </button>
@@ -77,57 +82,68 @@ const ViewBlog = () => {
             {/* Section: Pricing table */}
             <div className="pricing-table">
               <hr />
-              <div className="row row-cols-1 row-cols-lg-3">
+              <div
+                className="row row-cols-1 row-cols-lg-3"
+                style={{ justifyContent: "center" }}
+              >
                 {/* Plus Tier */}
-                {blogs.map((item) => (
-                  <div className="col" key={item._id}>
-                    <div className="card mb-5 mb-lg-0">
-                      <div className="card-header bg-primary py-3">
-                        <img
-                          src={`${process.env.REACT_APP_API_URL}/uploads/${item.blog_image}`}
-                          alt=""
-                          style={{ width: "100%", height: "200px" }}
-                        />
-                      </div>
-
-                      <div className="card-body p-3">
-                        <h6 className="">{item.blog_title}</h6>
-                        <div className="d-flex justify-content-center">
-                          <a
-                            href="#"
-                            className="btn btn-success my-2 radius-30"
-                          >
-                            Edit Blog
-                          </a>{" "}
-                          &nbsp;
-                          <Modal
-                            title="Title"
-                            open={open}
-                            onOk={handleOk}
-                            confirmLoading={confirmLoading}
-                            onCancel={handleCancel}
-                          >
-                            <p>{modalText}</p>
-                          </Modal>
-                          <a
-                            className="btn btn-danger my-2 radius-30"
-                            onClick={() => showModal(item._id)}
-                          >
-                            Delete Blog
-                          </a>
+                {blogs.length > 0 ? (
+                  blogs.map((item) => (
+                    <div className="col" key={item._id} id={item._id}>
+                      <div className="card mb-5 mb-lg-0">
+                        <div className="card-header bg-primary py-3">
+                          <img
+                            src={`${process.env.REACT_APP_API_URL}/uploads/${item.blog_image}`}
+                            alt=""
+                            style={{ width: "100%", height: "200px" }}
+                          />
                         </div>
-                        <div className="d-grid">
-                          <a
-                            href="#"
-                            className="btn btn-primary my-2 radius-30"
-                          >
-                            View Blog
-                          </a>
+
+                        <div className="card-body p-3">
+                          <h6 className="">{item.blog_title}</h6>
+                          <div className="d-flex justify-content-center">
+                            <a
+                              href={"/admin/edit-blog/" + item._id}
+                              className="btn btn-success my-2 radius-30"
+                            >
+                              Edit Blog
+                            </a>{" "}
+                            &nbsp;
+                            <Modal
+                              title="Title"
+                              open={open}
+                              onOk={() => {
+                                handleOk(item._id);
+                              }}
+                              confirmLoading={confirmLoading}
+                              onCancel={handleCancel}
+                            >
+                              <p>{modalText}</p>
+                            </Modal>
+                            <a
+                              className="btn btn-danger my-2 radius-30"
+                              onClick={() => showModal()}
+                            >
+                              Delete Blog
+                            </a>
+                          </div>
+                          <div className="d-grid">
+                            <a
+                              href={"/admin/view-blog/" + item._id}
+                              className="btn btn-primary my-2 radius-30"
+                            >
+                              View Blog
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div>
+                    <h4 style={{ color: "red " }}>Blogs Not Found</h4>
                   </div>
-                ))}
+                )}
               </div>
               {/*end row*/}
             </div>
@@ -148,6 +164,7 @@ const ViewBlog = () => {
         </footer>
       </div>
 
+      <ToastContainer />
       <AdminFooter />
     </>
   );
