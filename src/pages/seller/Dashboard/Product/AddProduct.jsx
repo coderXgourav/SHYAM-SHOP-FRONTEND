@@ -97,6 +97,12 @@ const AddProduct = () => {
 
   const editorRef = useRef(null);
 
+  const stripHtmlTags = (html) => {
+    return html
+      .replace(/<p[^>]*>/g, '')  // Remove opening <p> tags
+      .replace(/<\/p>/g, '');     // Remove closing </p> tags
+  };
+
   useEffect(() => {
     // Initialize Quill editor
     const quill = new Quill(editorRef.current, {
@@ -116,7 +122,9 @@ const AddProduct = () => {
 
     // Update the desc state whenever the content changes
     quill.on("text-change", () => {
-      setDesc(quill.root.innerHTML);
+      const rawHtml = quill.root.innerHTML;
+      const cleanedHtml = stripHtmlTags(rawHtml);
+      setDesc(cleanedHtml);
     });
 
     // Cleanup on unmount
@@ -124,6 +132,35 @@ const AddProduct = () => {
       quill.off("text-change");
     };
   }, []);
+
+  // useEffect(() => {
+    
+  //   // Initialize Quill editor
+  //   const quill = new Quill(editorRef.current, {
+  //     theme: "snow",
+  //     modules: {
+  //       toolbar: [
+  //         [{ header: "1" }, { header: "2" }],
+  //         [{ list: "ordered" }, { list: "bullet" }],
+  //         ["bold", "italic", "underline"],
+  //         ["link"],
+  //         [{ color: [] }, { background: [] }],
+  //         [{ align: [] }],
+  //         ["clean"],
+  //       ],
+  //     },
+  //   });
+
+  //   // Update the desc state whenever the content changes
+  //   quill.on("text-change", () => {
+  //     setDesc(quill.root.innerHTML);
+  //   });
+
+  //   // Cleanup on unmount
+  //   return () => {
+  //     quill.off("text-change");
+  //   };
+  // }, []);
 
   // Filter subcategories based on the selected category
   const selectedCategory = categoryData?.categories?.find(cat => cat._id === category);
