@@ -32,6 +32,7 @@ import NotFoundPage from "./pages/admin/NotFoundPage.jsx";
 import ViewBlog from "./pages/admin/Dashboard/Blog/ViewBlog.jsx";
 import EdtiBlog from "../src/pages/admin/Dashboard/Blog/editBlog.jsx";
 import ViewSingleBlog from "./pages/admin/Dashboard/Blog/ViewSingleBlog.jsx";
+import EditCategory from "./pages/admin/Dashboard/AdminCategory/EditCategory.jsx";
 
 function App() {
   return (
@@ -72,6 +73,7 @@ function App() {
         <Route path="/admin/view-blogs" element={<ViewBlog />} />
         <Route path="/admin/edit-blog/:id" element={<EdtiBlog />} />
         <Route path="/admin/view-blog/:id" element={<ViewSingleBlog />} />
+        <Route path="/admin/edit-category/:id" element={<EditCategory />} />
       </Routes>
     </>
   );
