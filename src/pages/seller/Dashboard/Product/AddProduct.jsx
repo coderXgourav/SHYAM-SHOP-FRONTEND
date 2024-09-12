@@ -97,33 +97,77 @@ const AddProduct = () => {
 
   const editorRef = useRef(null);
 
-  useEffect(() => {
-    // Initialize Quill editor
-    const quill = new Quill(editorRef.current, {
-      theme: "snow",
-      modules: {
-        toolbar: [
-          [{ header: "1" }, { header: "2" }],
-          [{ list: "ordered" }, { list: "bullet" }],
-          ["bold", "italic", "underline"],
-          ["link"],
-          [{ color: [] }, { background: [] }],
-          [{ align: [] }],
-          ["clean"],
-        ],
-      },
-    });
+const stripHtmlTags = (html) => {
+  // Handle common HTML tags added during copy-paste or manual typing
+  return html
+    .replace(/<p[^>]*>/g, '')  // Remove opening <p> tags
+    .replace(/<\/p>/g, '')     // Remove closing <p> tags
+    .replace(/<div[^>]*>/g, '')  // Remove opening <div> tags
+    .replace(/<\/div>/g, '')     // Remove closing <div> tags
+    .replace(/<span[^>]*>/g, '') // Remove opening <span> tags
+    .replace(/<\/span>/g, '')    // Remove closing <span> tags
+    .replace(/<br\s*\/?>/g, '\n') // Replace <br> tags with newlines
+    .replace(/<[^>]+>/g, '');   // Remove any remaining HTML tags
+};
 
-    // Update the desc state whenever the content changes
-    quill.on("text-change", () => {
-      setDesc(quill.root.innerHTML);
-    });
+useEffect(() => {
+  // Initialize Quill editor
+  const quill = new Quill(editorRef.current, {
+    theme: "snow",
+    modules: {
+      toolbar: [
+        [{ header: "1" }, { header: "2" }],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["bold", "italic", "underline"],
+        ["link"],
+        [{ color: [] }, { background: [] }],
+        [{ align: [] }],
+        ["clean"],
+      ],
+    },
+  });
 
-    // Cleanup on unmount
-    return () => {
-      quill.off("text-change");
-    };
-  }, []);
+  // Update the desc state whenever the content changes
+  quill.on("text-change", () => {
+    const rawHtml = quill.root.innerHTML;
+    const cleanedHtml = stripHtmlTags(rawHtml);
+    setDesc(cleanedHtml); // Ensure setDesc updates the state properly
+  });
+
+  // Cleanup on unmount
+  return () => {
+    quill.off("text-change");
+  };
+}, []);
+
+  // useEffect(() => {
+    
+  //   // Initialize Quill editor
+  //   const quill = new Quill(editorRef.current, {
+  //     theme: "snow",
+  //     modules: {
+  //       toolbar: [
+  //         [{ header: "1" }, { header: "2" }],
+  //         [{ list: "ordered" }, { list: "bullet" }],
+  //         ["bold", "italic", "underline"],
+  //         ["link"],
+  //         [{ color: [] }, { background: [] }],
+  //         [{ align: [] }],
+  //         ["clean"],
+  //       ],
+  //     },
+  //   });
+
+  //   // Update the desc state whenever the content changes
+  //   quill.on("text-change", () => {
+  //     setDesc(quill.root.innerHTML);
+  //   });
+
+  //   // Cleanup on unmount
+  //   return () => {
+  //     quill.off("text-change");
+  //   };
+  // }, []);
 
   // Filter subcategories based on the selected category
   const selectedCategory = categoryData?.categories?.find(cat => cat._id === category);

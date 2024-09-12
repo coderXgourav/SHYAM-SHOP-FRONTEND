@@ -17,6 +17,9 @@ import AdminDashboard from "./pages/admin/Dashboard/AdminDashboard";
 import AdminAddCategory from "./pages/admin/Dashboard/AdminCategory/AdminAddCategory";
 import AdminViewCategory from "./pages/admin/Dashboard/AdminCategory/AdminViewCategory";
 import AdminAddProduct from "./pages/admin/Dashboard/AdminProduct/AdminAddProduct";
+
+import AdminUpdateProduct from "./pages/admin/Dashboard/AdminProduct/AdminUpdateProduct.jsx";
+
 import AdminViewProducts from "./pages/admin/Dashboard/AdminProduct/AdminViewProducts";
 import AdminManageOrder from "./pages/admin/Dashboard/AdminManageOrder";
 import AdminAddSeller from "./pages/admin/Dashboard/AdminAddSeller";
@@ -64,6 +67,10 @@ function App() {
         <Route path="/admin-add-seller" element={<AdminAddSeller />} />
         <Route path="/admin-view-seller" element={<AdminViewSeller />} />
         <Route path="/admin-refund" element={<AdminRefund />} />
+
+        <Route path="/admin-update-products/:id" element={<AdminUpdateProducts/>} />
+
+
         <Route path="*" element={<NotFoundPage />} />
         <Route
           path="/admin-request-category"
