@@ -19,8 +19,14 @@ const EditCategory = () => {
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
 
+  const [subCategoryUpdateName, setSubCategoryUpdateName] = useState("");
+  const [subCategoryUpdateId, setSubCategoryUpdateId] = useState(null);
+
   const [dataLoading, setDataLoading] = useState(true);
   const { id } = useParams();
+
+  const token = Cookies.get("adminToken");
+
   const showLoading = async (subcategoryId) => {
     setOpen(true);
     setLoading(true);
@@ -33,8 +39,13 @@ const EditCategory = () => {
       }
     );
 
-    console.log(getName);
+    setSubCategoryUpdateName(getName.data.sub);
+    setSubCategoryUpdateId(getName.data._id);
+    setLoading(false);
+
+    return;
   };
+
   useEffect(async () => {
     const result = await fetch(
       `${process.env.REACT_APP_API_URL}/admin/get-category-edit/${id}`,
@@ -164,6 +175,25 @@ const EditCategory = () => {
     }
   };
 
+  const updateSubCategory = async (id) => {
+    try {
+      const update = await axios.put(
+        `${process.env.REACT_APP_API_URL}/admin/update-subcategory/${id}`,
+        { updateName: subCategoryUpdateName },
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+      const result = update.data;
+      toast[result.icon](result.title);
+      setOpen(false);
+    } catch (error) {
+      toast["error"](error.message);
+      setOpen(false);
+    }
+  };
   return (
     <>
       <AdminHeader />
@@ -333,7 +363,7 @@ const EditCategory = () => {
                       <input
                         type="submit"
                         className="btn btn-primary my-3"
-                        value="Add Category"
+                        value="Update Category"
                       />
                     </div>
                   </div>
@@ -347,11 +377,18 @@ const EditCategory = () => {
             loading={loading}
             open={open}
             onCancel={() => setOpen(false)}
+            onOk={() => {
+              updateSubCategory(subCategoryUpdateId);
+            }}
           >
             <input
               type="text"
               className="form-control my-4"
               placeholder="Type Updated name"
+              value={subCategoryUpdateId != null ? subCategoryUpdateName : ""}
+              onChange={(e) => {
+                setSubCategoryUpdateName(e.target.value);
+              }}
             />
           </Modal>
         </div>
