@@ -7,7 +7,9 @@ import { toast, ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Spin } from "antd";
 import { useParams } from "react-router-dom";
-import { Button, Modal } from "antd";
+import { Button, Modal, Popconfirm } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
+import { subCategoryDelete } from "../../../../utils/admin/adminAPI";
 
 const EditCategory = () => {
   const [categoryName, setCategoryName] = useState("");
@@ -24,6 +26,18 @@ const EditCategory = () => {
 
   const [dataLoading, setDataLoading] = useState(true);
   const { id } = useParams();
+
+  const confirm = async (id) => {
+    const result = await subCategoryDelete(id);
+    toast[result.icon](result.title);
+    if (result.status) {
+      document.getElementById(id).style.display = "none";
+    }
+
+    new Promise((resolve) => {
+      setTimeout(() => resolve(null), 0);
+    });
+  };
 
   const token = Cookies.get("adminToken");
 
@@ -318,6 +332,7 @@ const EditCategory = () => {
                                     justifyContent: "space-around",
                                     alignItems: "center",
                                   }}
+                                  id={subCategory._id}
                                 >
                                   <div style={{ width: "85%" }}>
                                     <input
@@ -343,16 +358,28 @@ const EditCategory = () => {
                                         />
                                       </a>
                                     </Button>
-
-                                    <a href="javascript:;" className="ms-3 ">
-                                      <i
-                                        className="bx bxs-trash"
-                                        style={{
-                                          fontSize: "20px",
-                                          color: "red",
-                                        }}
-                                      />
-                                    </a>
+                                    <Popconfirm
+                                      title="Delete the task"
+                                      description="Are you sure to delete this subcategory?"
+                                      icon={
+                                        <QuestionCircleOutlined
+                                          style={{
+                                            color: "red",
+                                          }}
+                                        />
+                                      }
+                                      onConfirm={() => confirm(subCategory._id)}
+                                    >
+                                      <a href="javascript:;" className="ms-3 ">
+                                        <i
+                                          className="bx bxs-trash"
+                                          style={{
+                                            fontSize: "20px",
+                                            color: "red",
+                                          }}
+                                        />
+                                      </a>
+                                    </Popconfirm>
                                   </div>
                                 </li>
                               </div>
