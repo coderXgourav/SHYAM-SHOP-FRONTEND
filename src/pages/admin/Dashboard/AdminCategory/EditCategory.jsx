@@ -187,7 +187,9 @@ const EditCategory = () => {
         }
       );
       const result = update.data;
+
       toast[result.icon](result.title);
+
       setOpen(false);
     } catch (error) {
       toast["error"](error.message);
@@ -319,9 +321,9 @@ const EditCategory = () => {
                                 >
                                   <div style={{ width: "85%" }}>
                                     <input
+                                      id={subCategory._id}
                                       className="form-control"
                                       type="text"
-                                      name={subCategory._id}
                                       value={subCategory.sub}
                                       disabled={true}
                                     />
