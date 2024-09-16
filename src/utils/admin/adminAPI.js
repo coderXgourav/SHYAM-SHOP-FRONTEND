@@ -110,3 +110,19 @@ export const getBlogData = async (id) => {
     return { status: false, title: "technical issue", icon: "error" };
   }
 };
+
+export const subCategoryDelete = async (id) => {
+  try {
+    const result = await axios.delete(
+      `${api_url}/admin/delete-subcategory/${id}`,
+      {
+        headers: {
+          Authorization: Cookies.get("adminToken"),
+        },
+      }
+    );
+    return result.data;
+  } catch (error) {
+    return { status: false, title: "technical issue", icon: "error" };
+  }
+};

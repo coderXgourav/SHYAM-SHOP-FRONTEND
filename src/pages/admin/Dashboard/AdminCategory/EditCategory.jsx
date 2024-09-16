@@ -7,7 +7,9 @@ import { toast, ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Spin } from "antd";
 import { useParams } from "react-router-dom";
-import { Button, Modal } from "antd";
+import { Button, Modal, Popconfirm } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
+import { subCategoryDelete } from "../../../../utils/admin/adminAPI";
 
 const EditCategory = () => {
   const [categoryName, setCategoryName] = useState("");
@@ -19,8 +21,26 @@ const EditCategory = () => {
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
 
+  const [subCategoryUpdateName, setSubCategoryUpdateName] = useState("");
+  const [subCategoryUpdateId, setSubCategoryUpdateId] = useState(null);
+
   const [dataLoading, setDataLoading] = useState(true);
   const { id } = useParams();
+
+  const confirm = async (id) => {
+    const result = await subCategoryDelete(id);
+    toast[result.icon](result.title);
+    if (result.status) {
+      document.getElementById(id).style.display = "none";
+    }
+
+    new Promise((resolve) => {
+      setTimeout(() => resolve(null), 0);
+    });
+  };
+
+  const token = Cookies.get("adminToken");
+
   const showLoading = async (subcategoryId) => {
     setOpen(true);
     setLoading(true);
@@ -33,8 +53,13 @@ const EditCategory = () => {
       }
     );
 
-    console.log(getName);
+    setSubCategoryUpdateName(getName.data.sub);
+    setSubCategoryUpdateId(getName.data._id);
+    setLoading(false);
+
+    return;
   };
+
   useEffect(async () => {
     const result = await fetch(
       `${process.env.REACT_APP_API_URL}/admin/get-category-edit/${id}`,
@@ -164,6 +189,27 @@ const EditCategory = () => {
     }
   };
 
+  const updateSubCategory = async (id) => {
+    try {
+      const update = await axios.put(
+        `${process.env.REACT_APP_API_URL}/admin/update-subcategory/${id}`,
+        { updateName: subCategoryUpdateName },
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+      const result = update.data;
+
+      toast[result.icon](result.title);
+
+      setOpen(false);
+    } catch (error) {
+      toast["error"](error.message);
+      setOpen(false);
+    }
+  };
   return (
     <>
       <AdminHeader />
@@ -286,12 +332,13 @@ const EditCategory = () => {
                                     justifyContent: "space-around",
                                     alignItems: "center",
                                   }}
+                                  id={subCategory._id}
                                 >
                                   <div style={{ width: "85%" }}>
                                     <input
+                                      id={subCategory._id}
                                       className="form-control"
                                       type="text"
-                                      name={subCategory._id}
                                       value={subCategory.sub}
                                       disabled={true}
                                     />
@@ -311,16 +358,28 @@ const EditCategory = () => {
                                         />
                                       </a>
                                     </Button>
-
-                                    <a href="javascript:;" className="ms-3 ">
-                                      <i
-                                        className="bx bxs-trash"
-                                        style={{
-                                          fontSize: "20px",
-                                          color: "red",
-                                        }}
-                                      />
-                                    </a>
+                                    <Popconfirm
+                                      title="Delete the task"
+                                      description="Are you sure to delete this subcategory?"
+                                      icon={
+                                        <QuestionCircleOutlined
+                                          style={{
+                                            color: "red",
+                                          }}
+                                        />
+                                      }
+                                      onConfirm={() => confirm(subCategory._id)}
+                                    >
+                                      <a href="javascript:;" className="ms-3 ">
+                                        <i
+                                          className="bx bxs-trash"
+                                          style={{
+                                            fontSize: "20px",
+                                            color: "red",
+                                          }}
+                                        />
+                                      </a>
+                                    </Popconfirm>
                                   </div>
                                 </li>
                               </div>
@@ -333,7 +392,7 @@ const EditCategory = () => {
                       <input
                         type="submit"
                         className="btn btn-primary my-3"
-                        value="Add Category"
+                        value="Update Category"
                       />
                     </div>
                   </div>
@@ -347,11 +406,18 @@ const EditCategory = () => {
             loading={loading}
             open={open}
             onCancel={() => setOpen(false)}
+            onOk={() => {
+              updateSubCategory(subCategoryUpdateId);
+            }}
           >
             <input
               type="text"
               className="form-control my-4"
               placeholder="Type Updated name"
+              value={subCategoryUpdateId != null ? subCategoryUpdateName : ""}
+              onChange={(e) => {
+                setSubCategoryUpdateName(e.target.value);
+              }}
             />
           </Modal>
         </div>
