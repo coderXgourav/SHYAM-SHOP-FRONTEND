@@ -68,8 +68,10 @@ function App() {
         <Route path="/admin-view-seller" element={<AdminViewSeller />} />
         <Route path="/admin-refund" element={<AdminRefund />} />
 
-        <Route path="/admin-update-products/:id" element={<AdminUpdateProducts/>} />
-
+        <Route
+          path="/admin-update-products/:id"
+          element={<AdminUpdateProducts />}
+        />
 
         <Route path="*" element={<NotFoundPage />} />
         <Route
