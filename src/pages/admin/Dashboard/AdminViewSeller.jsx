@@ -74,6 +74,7 @@ const AdminViewSeller = () => {
                   <thead className="table-light">
                     <tr>
                       <th>No</th>
+                      <th>Seller Id</th>
                       <th>Seller Name</th>
                       <th>Email</th>
                       <th>Date Joined</th>
