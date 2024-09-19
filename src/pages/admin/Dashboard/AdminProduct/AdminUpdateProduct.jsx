@@ -43,7 +43,7 @@ const AdminUpdateProducts = () => {
   const getCategoryData = async () => {
     try {
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/admin/admin-category`,
+        `${process.env.REACT_APP_API_URL}/admin/admin-get-all-categories`,
         {
             
                 headers: {

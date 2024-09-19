@@ -24,14 +24,10 @@ const AddProduct = () => {
   // Fetch category data from API
   const getCategoryData = async (page = 1) => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-category`, {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-all-categories`, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `${token}`,
-        },
-        params: {
-          page,
-          limit: 20,
+          token: `${token}`,
         },
       });
       console.log('Category Data:', res.data); // Log response for debugging
