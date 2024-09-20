@@ -420,7 +420,7 @@ const AdminHeader = () => {
                     />
                     <div className="user-info">
                       <p className="user-name mb-0">Gourav</p>
-                      <p className="designattion mb-0">Seller Portal</p>
+                      <p className="designattion mb-0">Admin Portal</p>
                     </div>
                   </a>
                   <ul className="dropdown-menu dropdown-menu-end">

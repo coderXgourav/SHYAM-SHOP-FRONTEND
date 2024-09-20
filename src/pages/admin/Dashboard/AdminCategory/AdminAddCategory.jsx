@@ -81,7 +81,7 @@ const AdminAddCategory = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${Cookies.get("adminToken")}`,
+            Authorization: `${Cookies.get("adminToken")}`,
           },
         }
       );
