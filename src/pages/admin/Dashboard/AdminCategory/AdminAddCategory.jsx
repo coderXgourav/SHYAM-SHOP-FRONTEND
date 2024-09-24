@@ -106,7 +106,7 @@ const AdminAddCategory = () => {
 
       console.log("Category created successfully", response.data);
     } catch (error) {
-      toast.error("Failed to create category. Please try again.", {
+      toast.error("Category already exist", {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,

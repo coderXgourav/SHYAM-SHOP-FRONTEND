@@ -13,28 +13,8 @@ const AdminViewProducts = () => {
 
   console.log("prodData", productData);
 
-  const getAllProducts = async () => {
-    setLoading(true); // Set loading to true when fetching starts
-
-    try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/admin/admin-get-all-products`,
-        {
-          headers: {
-            Authorization: `${Cookies.get("adminToken")}`,
-          },
-        }
-      );
-      setProductData(res.data.data);
-    } catch (error) {
-      console.log(error.message);
-    } finally {
-      setLoading(false); // Set loading to false when fetching completes
-    }
-  };
-
-  // Delete product function
-  const deleteProduct = async (productId) => {
+   // Delete product function
+   const deleteProduct = async (productId) => {
     try {
       const res = await axios.delete(
         `${process.env.REACT_APP_API_URL}/admin/admin-delete-product/${productId}`,
@@ -56,6 +36,27 @@ const AdminViewProducts = () => {
     }
   };
 
+  const getAllProducts = async () => {
+    setLoading(true); // Set loading to true when fetching starts
+
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/admin/admin-get-all-products`,
+        {
+          headers: {
+            Authorization: `${Cookies.get("adminToken")}`,
+          },
+        }
+      );
+      setProductData(res.data.data);
+    } catch (error) {
+      console.log(error.message);
+    } finally {
+      setLoading(false); // Set loading to false when fetching completes
+    }
+  };
+
+ 
   useEffect(() => {
     getAllProducts();
   }, []);

@@ -12,6 +12,8 @@ const AdminViewCategory = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false); // Added loading state
 
+console.log("categotycheck",categories)
+
   const fetchCategories = async (page = 1) => {
     setLoading(true); // Set loading to true when fetching starts
     try {
