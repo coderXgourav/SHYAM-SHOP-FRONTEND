@@ -36,6 +36,7 @@ import ViewBlog from "./pages/admin/Dashboard/Blog/ViewBlog.jsx";
 import EdtiBlog from "../src/pages/admin/Dashboard/Blog/editBlog.jsx";
 import ViewSingleBlog from "./pages/admin/Dashboard/Blog/ViewSingleBlog.jsx";
 import EditCategory from "./pages/admin/Dashboard/AdminCategory/EditCategory.jsx";
+import ManageOrder from "./pages/seller/ManageOrder.jsx";
 
 function App() {
   return (
@@ -52,6 +53,9 @@ function App() {
         <Route path="/seller/view-category" element={<ViewCategory />} />
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/view-products" element={<ViewProducts />} />
+
+        <Route path="/manage-orders" element={<ManageOrder />} />
+
 
         <Route path="/update-products/:id" element={<UpdateProducts />} />
 

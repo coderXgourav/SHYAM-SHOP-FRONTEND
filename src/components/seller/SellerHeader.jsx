@@ -101,12 +101,12 @@ const SellerHeader = () => {
                 <ul>
                   <li>
                     {" "}
-                    <a href="#">
+                    <a href="/manage-orders">
                       <i className="bx bx-radio-circle" />
-                      Grid System
+                      Manage Orders
                     </a>
                   </li>
-                  <li>
+                  {/* <li>
                     {" "}
                     <a href="#">
                       <i className="bx bx-radio-circle" />
@@ -119,7 +119,7 @@ const SellerHeader = () => {
                       <i className="bx bx-radio-circle" />
                       Text Utilities
                     </a>
-                  </li>
+                  </li> */}
                 </ul>
               </li>
               <li>
