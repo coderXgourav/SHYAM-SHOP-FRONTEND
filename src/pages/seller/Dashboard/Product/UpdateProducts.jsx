@@ -249,7 +249,7 @@ const UpdateProducts = () => {
             </div>
             <div className="ms-auto">
               <div className="btn-group">
-                <a href="#">
+                <a href="/view-products">
                   <button type="button" className="btn-sm btn btn-primary">
                     View Products
                   </button>

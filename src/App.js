@@ -37,6 +37,8 @@ import EdtiBlog from "../src/pages/admin/Dashboard/Blog/editBlog.jsx";
 import ViewSingleBlog from "./pages/admin/Dashboard/Blog/ViewSingleBlog.jsx";
 import EditCategory from "./pages/admin/Dashboard/AdminCategory/EditCategory.jsx";
 import ManageOrder from "./pages/seller/ManageOrder.jsx";
+import AddBulkProductForm from "./pages/seller/Dashboard/Product/AddBulkProductForm.jsx";
+import ViewOrderDetails from "./pages/seller/ViewOrderDetail.jsx";
 
 function App() {
   return (
@@ -53,6 +55,12 @@ function App() {
         <Route path="/seller/view-category" element={<ViewCategory />} />
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/view-products" element={<ViewProducts />} />
+
+        <Route path="/add-bulk-products" element={<AddBulkProductForm />} />
+
+        <Route path="/sellers-orders-details/:orderId" element={<ViewOrderDetails/>} />
+
+
 
         <Route path="/manage-orders" element={<ManageOrder />} />
 

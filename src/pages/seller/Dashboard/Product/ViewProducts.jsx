@@ -62,7 +62,7 @@ const ViewProducts = () => {
                 <div className="card-body">
                   <div className="row align-items-center">
                     <div className="col-lg-3 col-xl-2">
-                      <a href="ecommerce-add-new-products.html" className="btn btn-primary mb-3 mb-lg-0">
+                      <a href="/add-product" className="btn btn-primary mb-3 mb-lg-0">
                         <i className="bx bxs-plus-square"></i>New Product
                       </a>
                     </div>

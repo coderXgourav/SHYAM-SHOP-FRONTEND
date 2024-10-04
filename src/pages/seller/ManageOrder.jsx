@@ -6,6 +6,9 @@ import { Modal, Pagination, Spin,message,Select } from "antd";
 import SellerHeader from '../../components/seller/SellerHeader'
 import SellerFooter from '../../components/seller/SellerFooter'
 
+import moment from 'moment';
+import { useNavigate } from "react-router-dom";
+import ViewOrderDetails from "./ViewOrderDetail";
 
 
 const ManageOrder = (page=1) => {
@@ -14,7 +17,7 @@ const ManageOrder = (page=1) => {
 
   //updateorderStatus
   const [updateOrder,setUpdateOrder]=useState([])
-
+  const navigate=useNavigate()
 
    //pagination
    const [currentPage, setCurrentPage] = useState(1); // Track current page
@@ -32,6 +35,9 @@ const ManageOrder = (page=1) => {
     console.log("current",currentPage)
 
 
+    const formatOrderDate = (date) => {
+      return moment(date).format('MMMM Do YYYY, h:mm:ss a');  // Format the date
+  };
 
 
   // Order status options
@@ -139,12 +145,12 @@ const ManageOrder = (page=1) => {
             <i className="bx bxs-circle align-middle me-1"></i>Failed
           </div>
         );
-      default:
-        return (
-          <div className="badge rounded-pill text-secondary bg-light-secondary p-2 text-uppercase px-3">
-            <i className="bx bxs-circle align-middle me-1"></i>Unknown
-          </div>
-        );
+      // default:
+      //   return (
+      //     <div className="badge rounded-pill text-secondary bg-light-secondary p-2 text-uppercase px-3">
+      //       <i className="bx bxs-circle align-middle me-1"></i>Unknown
+      //     </div>
+      //   );
     }
   };
 
@@ -187,7 +193,7 @@ const ManageOrder = (page=1) => {
                 <div className="ms-auto">
                   <a href="#" className="btn btn-sm btn-primary mt-2 mt-lg-0">
                     <i className="bx bxs-plus-square" />
-                    Add New Order
+                    Add New Product
                   </a>
                 </div>
               </div>
@@ -195,93 +201,195 @@ const ManageOrder = (page=1) => {
               {loading ? (
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}><Spin  size="large" className="spin-overlay" /></div>
               ) : (
-                <div className="table-responsive"  style={{overflowY:"hidden"}}>
-                  <table className="table mb-0">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Order#</th>
-                        <th>Customer Email</th>
-                        <th>Payment Status</th>
-                        <th>Order Status</th>
+                // <div className="table-responsive"  style={{overflowY:"hidden",zoom:"0.9"}}>
+                //   <table className="table mb-0">
+                //     <thead className="table-light">
+                //       <tr>
+                //         <th>Order#</th>
+                //         <th>Customer Email</th>
+                //         <th>Payment Status</th>
+                //         <th>Order Status</th>
 
-                        <th>Total</th>
+                //         <th>Total</th>
 
-                        <th>Date</th>
-                        <th>View Details</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allOrders?.length > 0 ? (
-                        allOrders?.map((order, index) => (
-                          <tr key={order._id}>
-                            <td>
-                              <div className="d-flex align-items-center">
+                //         <th>Date</th>
+                //         <th>View Details</th>
+                //         <th>Actions</th>
+                //       </tr>
+                //     </thead>
+                //     <tbody>
+                //       {allOrders?.length > 0 ? (
+                //         allOrders?.map((order, index) => (
+                //           <tr key={order._id}>
+                //             <td>
+                //               <div className="d-flex align-items-center">
                                
-                                <div className="ms-2">
-                                  <h6 className="mb-0 font-14">{index + 1}</h6>
-                                </div>
+                //                 <div className="ms-2">
+                //                   <h6 className="mb-0 font-14">{index + 1}</h6>
+                //                 </div>
+                //               </div>
+                //             </td>
+                //             <td>{order.email}</td>
+                //             <td>{formatStatus(order.paymentDetails.payment_status)}</td>
+
+
+                //         <td>
+                //           {order?.productDetails?.map((order_status) => (
+                //             <div key={order_status.productId} className="d-flex order-actions">
+                //               <Select
+                //                 defaultValue={order_status.orderStatus || 'Pending'} // Default to Pending if no status
+                //                 onChange={(value) =>
+                //                   updateOrderStatus(order._id, order_status.productId, value)
+                //                 }
+                //                 options={orderStatusOptions}
+                //                 style={{ width: 150 }}
+                //               />
+                //             </div>
+                //           ))}
+                //         </td>
+                          
+
+                //             <td>${order.totalAmount}</td>
+
+                           
+
+                //             <td >{formatOrderDate(order.createdAt)}</td>
+
+                            
+
+                //             <td>
+                //               <button
+                //                 type="button"
+                //                 className="btn btn-primary btn-sm radius-30 px-2"
+                //               >
+                //                 View Details
+                //               </button>
+                //             </td>
+                //             <td>
+                //               <div className="d-flex order-actions">
+                //                 <a href="javascript:void(0);" className="">
+                //                   <i className="bx bxs-edit"></i>
+                //                 </a>
+                //                 <a href="javascript:void(0);" className="ms-3">
+                //                   <i className="bx bxs-trash"></i>
+                //                 </a>
+                //               </div>
+                //             </td>
+                //           </tr>
+                //         ))
+                //       ) : (
+                //         <tr>
+                //           <td colSpan="7">No orders found.</td>
+                //         </tr>
+                //       )}
+                //     </tbody>
+                //   </table>
+
+                //     {/* Pagination Controls */}
+                //     <div className="pagination mt-4">
+                //         <Pagination
+                //         current={currentPage}
+                //         pageSize={pageSize}
+                //         total={totalOrders}
+                //         onChange={handlePageChange}
+                //         className="flex justify-center mt-4"
+                //     />
+                //     </div>
+
+                // </div>
+
+                <table className="table mb-0">
+                <thead className="table-light">
+                  <tr>
+                    <th>Order#</th>
+                    <th>Customer Email</th>
+
+                    <th>Product</th>
+
+                    <th>Payment Status</th>
+                    <th>Order Status</th>
+                    <th>Total</th>
+                    <th>Date</th>
+                    <th>View Details</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allOrders?.length > 0 ? (
+                    allOrders?.flatMap((order, index) => 
+                      order.productDetails.map((product, productIndex) => (
+                        <tr key={`${order._id}-${product.productId}`}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div className="ms-2">
+                                <h6 className="mb-0 font-14">{index + 1}</h6>
                               </div>
-                            </td>
-                            <td>{order.email}</td>
-                            <td>{formatStatus(order.paymentDetails.payment_status)}</td>
+                            </div>
+                          </td>
+                          <td>{order.email}</td>
+
+                                    
+            {/* Display Product Name */}
+            <td>{product.name}</td>  {/* Assuming 'productName' contains the name of the product */}
 
 
-                        <td>
-                          {order?.productDetails?.map((order_status) => (
-                            <div key={order_status.productId} className="d-flex order-actions">
+                          <td>{formatStatus(order.paymentDetails.payment_status)}</td>
+                          <td>
+                            <div className="d-flex order-actions">
                               <Select
-                                defaultValue={order_status.orderStatus || 'Pending'} // Default to Pending if no status
-                                onChange={(value) =>
-                                  updateOrderStatus(order._id, order_status.productId, value)
-                                }
+                                defaultValue={product.orderStatus || 'Pending'} // Default to Pending if no status
+                                onChange={(value) => updateOrderStatus(order._id, product.productId, value)}
                                 options={orderStatusOptions}
                                 style={{ width: 150 }}
                               />
                             </div>
-                          ))}
-                        </td>
-                          
+                          </td>
+                          <td>${order.totalAmount}</td>
+                          <td>{formatOrderDate(order.createdAt)}</td>
+                          <td>
+                            {/* <button
+                              type="button"
+                              className="btn btn-primary btn-sm radius-30"
+                            >
+                              View Details
+                            </button> */}
+                                  <button 
+                              className="btn-donate" 
+                              onClick={() => {
+                                navigate(`/sellers-orders-details/${order._id}`);
+                                window.location.reload()
+                              }}
+                            >
+                              View Details
+                            </button>
 
-                            <td>${order.totalAmount}</td>
-
-                           
-
-                            <td>{formatDate(order.createdAt)}</td>
-
-                            
-
-                            <td>
-                              <button
-                                type="button"
-                                className="btn btn-primary btn-sm radius-30 px-4"
-                              >
-                                View Details
-                              </button>
-                            </td>
-                            <td>
-                              <div className="d-flex order-actions">
-                                <a href="javascript:void(0);" className="">
-                                  <i className="bx bxs-edit"></i>
-                                </a>
-                                <a href="javascript:void(0);" className="ms-3">
-                                  <i className="bx bxs-trash"></i>
-                                </a>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="7">No orders found.</td>
+                          </td>
+                          <td>
+                            <div className="d-flex order-actions">
+                              <a href="javascript:void(0);" className="">
+                                <i className="bx bxs-edit"></i>
+                              </a>
+                              <a href="javascript:void(0);" className="ms-3">
+                                <i className="bx bxs-trash"></i>
+                              </a>
+                            </div>
+                          </td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      ))
+                    )
+                  ) : (
+                    <tr>
+                      <td colSpan="8">No orders found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
 
-                    {/* Pagination Controls */}
-                    <div className="pagination mt-4">
-                        <Pagination
+                    )}
+
+                       {/* Pagination Controls */}
+                     <div className="pagination mt-4">
+                         <Pagination
                         current={currentPage}
                         pageSize={pageSize}
                         total={totalOrders}
@@ -289,9 +397,7 @@ const ManageOrder = (page=1) => {
                         className="flex justify-center mt-4"
                     />
                     </div>
-
-                </div>
-              )}
+                    
             </div>
           </div>
         </div>

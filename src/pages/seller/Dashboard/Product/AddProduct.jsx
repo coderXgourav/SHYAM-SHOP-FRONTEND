@@ -136,34 +136,7 @@ useEffect(() => {
   };
 }, []);
 
-  // useEffect(() => {
-    
-  //   // Initialize Quill editor
-  //   const quill = new Quill(editorRef.current, {
-  //     theme: "snow",
-  //     modules: {
-  //       toolbar: [
-  //         [{ header: "1" }, { header: "2" }],
-  //         [{ list: "ordered" }, { list: "bullet" }],
-  //         ["bold", "italic", "underline"],
-  //         ["link"],
-  //         [{ color: [] }, { background: [] }],
-  //         [{ align: [] }],
-  //         ["clean"],
-  //       ],
-  //     },
-  //   });
-
-  //   // Update the desc state whenever the content changes
-  //   quill.on("text-change", () => {
-  //     setDesc(quill.root.innerHTML);
-  //   });
-
-  //   // Cleanup on unmount
-  //   return () => {
-  //     quill.off("text-change");
-  //   };
-  // }, []);
+  
 
   // Filter subcategories based on the selected category
   const selectedCategory = categoryData?.categories?.find(cat => cat._id === category);
@@ -192,9 +165,18 @@ useEffect(() => {
                 </ol>
               </nav>
             </div>
-            <div className="ms-auto">
-              <div className="btn-group">
-                <a href="{{route('seller.viewProduct')}}">
+
+            
+            <div className="ms-auto ">
+              <div className="btn-group dflex gap-2">
+
+              <a href="add-bulk-products">
+                  <button type="button" className="btn-sm btn btn-primary">
+                    Bulk Add
+                  </button>
+                </a>
+
+                <a href="/view-products">
                   <button type="button" className="btn-sm btn btn-primary">
                     View Products
                   </button>
