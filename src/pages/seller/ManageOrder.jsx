@@ -14,6 +14,9 @@ import ViewOrderDetails from "./ViewOrderDetail";
 const ManageOrder = (page=1) => {
   const [allOrders,setAllOrders]=useState([])
   const [totalPages, setTotalPages] = useState(1);
+  const [filteredPayment,setFilteredPayment]=useState([])
+  const[filteredOrders,setFilteredOrder]=useState([])
+  const [paymentFilter,setPaymentFilter]=useState('')
 
   //updateorderStatus
   const [updateOrder,setUpdateOrder]=useState([])
@@ -23,7 +26,7 @@ const ManageOrder = (page=1) => {
    const [currentPage, setCurrentPage] = useState(1); // Track current page
    const [loading, setLoading] = useState(true); // Track loading state
    const [totalOrders, setTotalOrders] = useState(0); // Store total orders for pagination
-   const pageSize = 8; // Number of products per page
+   const pageSize = 10; // Number of products per page
 
   const token = localStorage.getItem("sellerToken");
 
@@ -34,14 +37,24 @@ const ManageOrder = (page=1) => {
 
     console.log("current",currentPage)
 
+    console.log("filteredpayment",filteredPayment)
+
+
 
     const formatOrderDate = (date) => {
       return moment(date).format('MMMM Do YYYY, h:mm:ss a');  // Format the date
   };
 
+  const paymentStatusOptions = [
+    { value: '', label: 'Clear Filter' }, // Clear filter option
+    { value: 'pending', label: 'Pending' },
+    { value: 'succeeded', label: 'Succeeded' },
+    { value: 'failed', label: 'Failed' }
+  ];
 
   // Order status options
   const orderStatusOptions = [
+    { value: '', label: 'Clear Filter' },
     { value: 'Pending', label: 'Pending' },
     { value: 'Processing', label: 'Processing' },
     { value: 'Shipped', label: 'Shipped' },
@@ -52,9 +65,11 @@ const ManageOrder = (page=1) => {
 
 
 
+  
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
+        getOrder(page); // Fetch the orders for the selected page
       };
 
   const getOrder = async (page) => {
@@ -73,12 +88,60 @@ const ManageOrder = (page=1) => {
       setAllOrders(res.data.orders);
       setTotalOrders(res.data.total_count);
       setCurrentPage(res.data.currentPage);
+
+      //fetch all filtered payment
+      // applyFilter(paymentFilter, res.data.orders);
+
+       // Apply payment filter if it exists
+    if (paymentFilter) {
+      applyFilter(paymentFilter, res.data.orders);
+    } else {
+      setFilteredPayment(res.data.orders); // Show all orders if no filter is applied
+    }
+
+
     } catch (error) {
       console.log(error.message);
     } finally {
       setLoading(false); // Set loading to false when fetching completes
     }
   };
+
+  const applyFilter = (filter, orders) => {
+  let filtered = orders;
+  if (filter) {
+    filtered = orders.filter((order) =>
+      order.paymentDetails.payment_status === filter
+    );
+  }
+  
+  setFilteredPayment(filtered);
+  setTotalOrders(filtered.length); // Update the total orders count for pagination
+};
+
+
+  const handleOrderFilter=()=>{
+
+  }
+
+  // Handle payment filter change
+const handlePaymentFilter = (value) => {
+  // Prevent any default form submission or reload
+  if (value === '') {
+    setPaymentFilter('');
+    applyFilter('', allOrders); // Show all orders if "Clear Filter" is selected
+    // Reset to show all orders if "Clear Filter" is selected
+    // window.location.reload();
+    setCurrentPage(1); // Reset to first page when clearing filter
+  } else {
+    setPaymentFilter(value);
+    localStorage.setItem('paymentFilter', value);
+    applyFilter(value, allOrders);
+    setCurrentPage(1); // Reset to first page when clearing filter
+   
+  }
+};
+
 
   const updateOrderStatus = async (orderId, productId, newStatus) => {
     setLoading(true); // Set loading to true when fetching starts
@@ -98,7 +161,7 @@ const ManageOrder = (page=1) => {
           },
         }
       );
-      window.location.reload()
+      // window.location.reload()
       setUpdateOrder(res.data);
       setLoading(false)
 
@@ -110,19 +173,20 @@ const ManageOrder = (page=1) => {
   };
 
  
+  useEffect(() => {
+    getOrder(currentPage);
+  }, [currentPage]);
 
-  useEffect(()=>{
-    getOrder(currentPage)
-  },[currentPage])
+  useEffect(() => {
+    // Retrieve the filter from localStorage on mount
+    const savedFilter = localStorage.getItem('paymentFilter');
+    if (savedFilter) {
+      setPaymentFilter(savedFilter);
+      applyFilter(savedFilter, allOrders); // Apply the saved filter
+    }
+  }, []);
 
 
-
-
-
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
 
   // Helper function to format order status
   const formatStatus = (status) => {
@@ -145,12 +209,7 @@ const ManageOrder = (page=1) => {
             <i className="bx bxs-circle align-middle me-1"></i>Failed
           </div>
         );
-      // default:
-      //   return (
-      //     <div className="badge rounded-pill text-secondary bg-light-secondary p-2 text-uppercase px-3">
-      //       <i className="bx bxs-circle align-middle me-1"></i>Unknown
-      //     </div>
-      //   );
+    
     }
   };
 
@@ -190,6 +249,24 @@ const ManageOrder = (page=1) => {
                     <i className="bx bx-search" />
                   </span>
                 </div>
+                <div>
+                {/* <button type="button" className="btn btn-white">Filter By Payment </button> */}
+                <Select
+                    placeholder="Filter by Payment"
+                    style={{ width: 200 }}
+                    options={paymentStatusOptions}
+                    onChange={handlePaymentFilter}
+                  />
+                </div>
+                <div>
+                <Select
+                    placeholder="Filter by Order"
+                    style={{ width: 200 }}
+                    options={orderStatusOptions}
+                    onChange={handleOrderFilter}
+                  />
+                </div>
+
                 <div className="ms-auto">
                   <a href="#" className="btn btn-sm btn-primary mt-2 mt-lg-0">
                     <i className="bx bxs-plus-square" />
@@ -201,104 +278,8 @@ const ManageOrder = (page=1) => {
               {loading ? (
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}><Spin  size="large" className="spin-overlay" /></div>
               ) : (
-                // <div className="table-responsive"  style={{overflowY:"hidden",zoom:"0.9"}}>
-                //   <table className="table mb-0">
-                //     <thead className="table-light">
-                //       <tr>
-                //         <th>Order#</th>
-                //         <th>Customer Email</th>
-                //         <th>Payment Status</th>
-                //         <th>Order Status</th>
-
-                //         <th>Total</th>
-
-                //         <th>Date</th>
-                //         <th>View Details</th>
-                //         <th>Actions</th>
-                //       </tr>
-                //     </thead>
-                //     <tbody>
-                //       {allOrders?.length > 0 ? (
-                //         allOrders?.map((order, index) => (
-                //           <tr key={order._id}>
-                //             <td>
-                //               <div className="d-flex align-items-center">
-                               
-                //                 <div className="ms-2">
-                //                   <h6 className="mb-0 font-14">{index + 1}</h6>
-                //                 </div>
-                //               </div>
-                //             </td>
-                //             <td>{order.email}</td>
-                //             <td>{formatStatus(order.paymentDetails.payment_status)}</td>
-
-
-                //         <td>
-                //           {order?.productDetails?.map((order_status) => (
-                //             <div key={order_status.productId} className="d-flex order-actions">
-                //               <Select
-                //                 defaultValue={order_status.orderStatus || 'Pending'} // Default to Pending if no status
-                //                 onChange={(value) =>
-                //                   updateOrderStatus(order._id, order_status.productId, value)
-                //                 }
-                //                 options={orderStatusOptions}
-                //                 style={{ width: 150 }}
-                //               />
-                //             </div>
-                //           ))}
-                //         </td>
-                          
-
-                //             <td>${order.totalAmount}</td>
-
-                           
-
-                //             <td >{formatOrderDate(order.createdAt)}</td>
-
-                            
-
-                //             <td>
-                //               <button
-                //                 type="button"
-                //                 className="btn btn-primary btn-sm radius-30 px-2"
-                //               >
-                //                 View Details
-                //               </button>
-                //             </td>
-                //             <td>
-                //               <div className="d-flex order-actions">
-                //                 <a href="javascript:void(0);" className="">
-                //                   <i className="bx bxs-edit"></i>
-                //                 </a>
-                //                 <a href="javascript:void(0);" className="ms-3">
-                //                   <i className="bx bxs-trash"></i>
-                //                 </a>
-                //               </div>
-                //             </td>
-                //           </tr>
-                //         ))
-                //       ) : (
-                //         <tr>
-                //           <td colSpan="7">No orders found.</td>
-                //         </tr>
-                //       )}
-                //     </tbody>
-                //   </table>
-
-                //     {/* Pagination Controls */}
-                //     <div className="pagination mt-4">
-                //         <Pagination
-                //         current={currentPage}
-                //         pageSize={pageSize}
-                //         total={totalOrders}
-                //         onChange={handlePageChange}
-                //         className="flex justify-center mt-4"
-                //     />
-                //     </div>
-
-                // </div>
-
-                <table className="table mb-0">
+               
+               <table className="table mb-0">
                 <thead className="table-light">
                   <tr>
                     <th>Order#</th>
@@ -315,73 +296,64 @@ const ManageOrder = (page=1) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {allOrders?.length > 0 ? (
-                    allOrders?.flatMap((order, index) => 
-                      order.productDetails.map((product, productIndex) => (
-                        <tr key={`${order._id}-${product.productId}`}>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <div className="ms-2">
-                                <h6 className="mb-0 font-14">{index + 1}</h6>
-                              </div>
+
+                {filteredPayment.length > 0 ? (
+                    filteredPayment.map((order, index) => (
+                      <tr key={order._id}>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <div className="ms-2">
+                              <h6 className="mb-0 font-14">{(currentPage - 1) * pageSize + index + 1}</h6>
                             </div>
-                          </td>
-                          <td>{order.email}</td>
+                          </div>
+                        </td>
+                        <td>{order.email}</td>
+                        <td>
+                          {/* Join product names with a comma or any other separator */}
+                          {order.productDetails.map(product => product.name).join(', ')}
+                        </td>
+                        <td>{formatStatus(order.paymentDetails.payment_status)}</td>
+                        <td>
+                          <div className="d-flex order-actions">
+                            <Select
+                              defaultValue={order.productDetails[0].orderStatus || 'Pending'} // Default to Pending if no status
+                              onChange={(value) => updateOrderStatus(order._id, order.productDetails[0].productId, value)}
+                              options={orderStatusOptions}
+                              style={{ width: 150 }}
+                            />
+                          </div>
+                        </td>
+                        <td>${order.totalAmount}</td>
+                        <td>{formatOrderDate(order.createdAt)}</td>
+                        <td>
+                          <button 
+                            className="btn-donate" 
+                            onClick={() => {
+                              navigate(`/sellers-orders-details/${order._id}`);
+                              window.location.reload();
+                            }}
+                          >
+                            View Details
+                          </button>
+                        </td>
+                        <td>
+                          <div className="d-flex order-actions">
+                            <a href="javascript:void(0);" className="">
+                              <i className="bx bxs-edit"></i>
+                            </a>
+                            <a href="javascript:void(0);" className="ms-3">
+                              <i className="bx bxs-trash"></i>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                     ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8">No orders found.</td>
+                      </tr>
+                    )}
 
-                                    
-            {/* Display Product Name */}
-            <td>{product.name}</td>  {/* Assuming 'productName' contains the name of the product */}
-
-
-                          <td>{formatStatus(order.paymentDetails.payment_status)}</td>
-                          <td>
-                            <div className="d-flex order-actions">
-                              <Select
-                                defaultValue={product.orderStatus || 'Pending'} // Default to Pending if no status
-                                onChange={(value) => updateOrderStatus(order._id, product.productId, value)}
-                                options={orderStatusOptions}
-                                style={{ width: 150 }}
-                              />
-                            </div>
-                          </td>
-                          <td>${order.totalAmount}</td>
-                          <td>{formatOrderDate(order.createdAt)}</td>
-                          <td>
-                            {/* <button
-                              type="button"
-                              className="btn btn-primary btn-sm radius-30"
-                            >
-                              View Details
-                            </button> */}
-                                  <button 
-                              className="btn-donate" 
-                              onClick={() => {
-                                navigate(`/sellers-orders-details/${order._id}`);
-                                window.location.reload()
-                              }}
-                            >
-                              View Details
-                            </button>
-
-                          </td>
-                          <td>
-                            <div className="d-flex order-actions">
-                              <a href="javascript:void(0);" className="">
-                                <i className="bx bxs-edit"></i>
-                              </a>
-                              <a href="javascript:void(0);" className="ms-3">
-                                <i className="bx bxs-trash"></i>
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )
-                  ) : (
-                    <tr>
-                      <td colSpan="8">No orders found.</td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
 
