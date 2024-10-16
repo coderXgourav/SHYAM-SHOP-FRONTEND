@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { Modal, Pagination, Spin,message,Select } from "antd";
 import SellerHeader from '../../components/seller/SellerHeader'
 import SellerFooter from '../../components/seller/SellerFooter'
+import { jwtDecode } from "jwt-decode";
 
 import moment from 'moment';
 import { useNavigate } from "react-router-dom";
@@ -15,9 +16,12 @@ const ManageOrder = (page=1) => {
   const [allOrders,setAllOrders]=useState([])
   const [totalPages, setTotalPages] = useState(1);
   const [filteredPayment,setFilteredPayment]=useState([])
-  const[filteredOrders,setFilteredOrder]=useState([])
+  const[orderFilter,setOrderFilter]=useState('')
   const [paymentFilter,setPaymentFilter]=useState('')
 
+  const[keyword,setKeyword]=useState('')
+
+  
   //updateorderStatus
   const [updateOrder,setUpdateOrder]=useState([])
   const navigate=useNavigate()
@@ -28,7 +32,11 @@ const ManageOrder = (page=1) => {
    const [totalOrders, setTotalOrders] = useState(0); // Store total orders for pagination
    const pageSize = 10; // Number of products per page
 
-  const token = localStorage.getItem("sellerToken");
+
+   const token = localStorage.getItem("sellerToken");
+   const decodedToken = token && jwtDecode(token); // Decode the token
+  const sellerId = decodedToken.sellerToken._id; // Access the _id
+  console.log("Seller ID:", sellerId);
 
 
     console.log("allorders",allOrders)
@@ -65,11 +73,47 @@ const ManageOrder = (page=1) => {
 
 
 
-  
+
+  const handleSearch = () => {
+    setCurrentPage(1); // Reset to first page
+    getOrder(1); // Fetch orders for first page with new filters
+  };
+
+  const handleOrderFilterChange = (value) => {
+    setOrderFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handlePaymentFilterChange = (value) => {
+    setPaymentFilter(value);
+    setCurrentPage(1);
+  };
+
+ 
+//   const handleOrderFilterChange = (value) => {
+//     if (value === '') {
+//         window.location.reload();
+//     } else {
+//         setOrderFilter(value); // Correct filter state
+//         setCurrentPage(1); // Reset to first page
+//         // getOrder(1); // Fetch orders for first page
+//     }
+// };
+
+// const handlePaymentFilterChange = (value) => {
+//     if (value === '') {
+//         window.location.reload();
+//     } else {
+      
+//         setPaymentFilter(value);
+//         setCurrentPage(1); // Reset to first page
+//         getOrder(1); // Fetch orders for first page
+//     }
+// };
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
-        getOrder(page); // Fetch the orders for the selected page
+        
       };
 
   const getOrder = async (page) => {
@@ -77,29 +121,27 @@ const ManageOrder = (page=1) => {
 
     try {
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/seller/get-seller-order?page=${page}&limit=${pageSize}`,
+        `${process.env.REACT_APP_API_URL}/seller/get-seller-order?seller_id=${sellerId}&page=${page}&limit=${pageSize}&payment_status=${paymentFilter}&order_status=${orderFilter}&keyword=${keyword}`,
         {
           headers: {
             token: `${token}`,
           }
         }
       );
-      // setOrderStatusSelect(res.data.orders.productDetails.orderStatus)
+     
       setAllOrders(res.data.orders);
+      setFilteredPayment(res.data.orders);
       setTotalOrders(res.data.total_count);
       setCurrentPage(res.data.currentPage);
-
-      //fetch all filtered payment
-      // applyFilter(paymentFilter, res.data.orders);
-
-       // Apply payment filter if it exists
-    if (paymentFilter) {
-      applyFilter(paymentFilter, res.data.orders);
-    } else {
-      setFilteredPayment(res.data.orders); // Show all orders if no filter is applied
-    }
-
-
+      // setFilteredPayment(res.data.orders); // Show all orders if no filter is applied
+   
+       // Only set filtered orders if the filter is applied
+    // if (orderFilter || paymentFilter) {
+    //   setFilteredPayment(res.data.orders);
+     
+    // } else {
+    //   setFilteredPayment(res.data.orders); // No filter applied, show all orders
+    // }
     } catch (error) {
       console.log(error.message);
     } finally {
@@ -107,40 +149,11 @@ const ManageOrder = (page=1) => {
     }
   };
 
-  const applyFilter = (filter, orders) => {
-  let filtered = orders;
-  if (filter) {
-    filtered = orders.filter((order) =>
-      order.paymentDetails.payment_status === filter
-    );
-  }
+
+
+
   
-  setFilteredPayment(filtered);
-  setTotalOrders(filtered.length); // Update the total orders count for pagination
-};
 
-
-  const handleOrderFilter=()=>{
-
-  }
-
-  // Handle payment filter change
-const handlePaymentFilter = (value) => {
-  // Prevent any default form submission or reload
-  if (value === '') {
-    setPaymentFilter('');
-    applyFilter('', allOrders); // Show all orders if "Clear Filter" is selected
-    // Reset to show all orders if "Clear Filter" is selected
-    // window.location.reload();
-    setCurrentPage(1); // Reset to first page when clearing filter
-  } else {
-    setPaymentFilter(value);
-    localStorage.setItem('paymentFilter', value);
-    applyFilter(value, allOrders);
-    setCurrentPage(1); // Reset to first page when clearing filter
-   
-  }
-};
 
 
   const updateOrderStatus = async (orderId, productId, newStatus) => {
@@ -161,7 +174,7 @@ const handlePaymentFilter = (value) => {
           },
         }
       );
-      // window.location.reload()
+      window.location.reload()
       setUpdateOrder(res.data);
       setLoading(false)
 
@@ -174,17 +187,18 @@ const handlePaymentFilter = (value) => {
 
  
   useEffect(() => {
-    getOrder(currentPage);
-  }, [currentPage]);
+    const delayDebounceFn = setTimeout(() => {
+      getOrder(currentPage); // Fetch orders based on keyword after debounce
+    }, 500); // Adjust the delay as needed
+
+    return () => clearTimeout(delayDebounceFn); // Cleanup timeout on keyword change
+  }, [keyword]); // Only depend on keyword
 
   useEffect(() => {
-    // Retrieve the filter from localStorage on mount
-    const savedFilter = localStorage.getItem('paymentFilter');
-    if (savedFilter) {
-      setPaymentFilter(savedFilter);
-      applyFilter(savedFilter, allOrders); // Apply the saved filter
-    }
-  }, []);
+    getOrder(currentPage); // Fetch orders immediately when filters or current page change
+  }, [orderFilter, paymentFilter, currentPage]);
+
+ 
 
 
 
@@ -243,9 +257,12 @@ const handlePaymentFilter = (value) => {
                   <input
                     type="text"
                     className="form-control ps-5 radius-30"
-                    placeholder="Search orders"
+                    
+                    placeholder="User ID"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
                   />
-                  <span className="position-absolute top-50 product-show translate-middle-y">
+                  <span onClick={handleSearch} className="position-absolute top-50 product-show translate-middle-y">
                     <i className="bx bx-search" />
                   </span>
                 </div>
@@ -255,7 +272,7 @@ const handlePaymentFilter = (value) => {
                     placeholder="Filter by Payment"
                     style={{ width: 200 }}
                     options={paymentStatusOptions}
-                    onChange={handlePaymentFilter}
+                    onChange={handlePaymentFilterChange}
                   />
                 </div>
                 <div>
@@ -263,7 +280,7 @@ const handlePaymentFilter = (value) => {
                     placeholder="Filter by Order"
                     style={{ width: 200 }}
                     options={orderStatusOptions}
-                    onChange={handleOrderFilter}
+                    onChange={handleOrderFilterChange}
                   />
                 </div>
 

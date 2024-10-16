@@ -39,6 +39,7 @@ import EditCategory from "./pages/admin/Dashboard/AdminCategory/EditCategory.jsx
 import ManageOrder from "./pages/seller/ManageOrder.jsx";
 import AddBulkProductForm from "./pages/seller/Dashboard/Product/AddBulkProductForm.jsx";
 import ViewOrderDetails from "./pages/seller/ViewOrderDetail.jsx";
+import AdminCoupons from "./pages/admin/Coupon/AdminCoupons.jsx";
 
 function App() {
   return (
@@ -78,6 +79,9 @@ function App() {
         <Route path="/admin-manage-orders" element={<AdminManageOrder />} />
         <Route path="/admin-add-seller" element={<AdminAddSeller />} />
         <Route path="/admin-view-seller" element={<AdminViewSeller />} />
+
+        <Route path="/admin/create-coupons" element={<AdminCoupons />} />
+
         <Route path="/admin-refund" element={<AdminRefund />} />
 
         <Route

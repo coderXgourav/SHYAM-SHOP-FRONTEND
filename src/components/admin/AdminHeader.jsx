@@ -275,6 +275,31 @@ const AdminHeader = () => {
                   </li>
                 </ul>
               </li>
+
+              <li>
+                <a href="javascript:;" className="has-arrow">
+                  <div className="parent-icon">
+                    <i className="bx bx-category" />
+                  </div>
+                  <div className="menu-title">Coupon Management </div>
+                </a>
+                <ul>
+                  <li>
+                    {" "}
+                    <a href="/admin/create-coupons">
+                      <i className="bx bx-radio-circle" />
+                      Create Coupon
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/admin/view-blogs">
+                      <i className="bx bx-radio-circle" />
+                      View Blogs
+                    </a>
+                  </li>
+                </ul>
+              </li>
+
               <li>
                 <a className="has-arrow" href="javascript:;">
                   <div className="parent-icon">
