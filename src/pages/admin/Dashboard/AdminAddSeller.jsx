@@ -2,20 +2,51 @@ import React, { useEffect, useState } from "react";
 import Quill from "quill";
 import AdminHeader from "../../../components/admin/AdminHeader";
 import AdminFooter from "../../../components/admin/AdminFooter";
+import { message } from "antd";
+import axios from "axios";
 
 
 const AdminAddSeller = () => {
-  const [name, setName] = useState("");
+  const [sellerName, setSellerName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [password, setPassword] = useState("");
   const [desc, setDesc] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
 
   const sellerAddHandler = async (event) => {
     event.preventDefault();
-    if (!name || !email || !phone || !address) {
-      // Add validation or error handling as needed
+    if (!sellerName || !username || !email || !password) {
+      message.error("Please fill all fields");
+    }
+    const payload = {
+      sellerName: sellerName,
+      username: username,
+      email: email,
+      password: password,
+    }
+    console.log('payload', payload)
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/seller/register`,
+        payload,      
+      );
+      console.log(response.data);
+      if (response.data.status) {
+        message.success("Seller added successfully");
+        setSellerName("");
+        setUsername("");
+        setEmail("");
+        // setPhone("");
+        setPassword("");
+      } else {  
+        message.error("Error adding seller");
+      }
+      
+    } catch (error) {
+      
     }
     // Add logic to submit the form data to the backend
   };
@@ -27,11 +58,11 @@ const AdminAddSeller = () => {
     }
   };
 
-  useEffect(() => {
-    new Quill("#editor-container", {
-      theme: "snow",
-    });
-  }, []);
+  // useEffect(() => {
+  //   new Quill("#editor-container", {
+  //     theme: "snow",
+  //   });
+  // }, []);
 
   return (
     <>
@@ -55,7 +86,7 @@ const AdminAddSeller = () => {
             </div>
             <div className="ms-auto">
               <div className="btn-group">
-                <a href="{{route('admin.viewSellers')}}">
+                <a href="/admin-view-seller">
                   <button type="button" className="btn-sm btn btn-primary">
                     View Sellers
                   </button>
@@ -85,12 +116,33 @@ const AdminAddSeller = () => {
                             className="form-control"
                             id="inputSellerName"
                             placeholder="Enter seller name"
-                            name="name"
+                            name="sellername"
                             required
                             onChange={(e) => {
-                              setName(e.target.value);
+                              setSellerName(e.target.value);
                             }}
-                            value={name}
+                            value={sellerName}
+                          />
+                        </div>
+
+                        <div className="mb-3">
+                          <label
+                            htmlFor="inputSellerName"
+                            className="form-label"
+                          >
+                            Seller UserName
+                          </label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            id="inputSellerName"
+                            placeholder="Enter seller username"
+                            name="userName"
+                            required
+                            onChange={(e) => {
+                              setUsername(e.target.value);
+                            }}
+                            value={username}
                           />
                         </div>
                         <div className="mb-3">
@@ -113,7 +165,29 @@ const AdminAddSeller = () => {
                             value={email}
                           />
                         </div>
+
+
                         <div className="mb-3">
+                          <label
+                            htmlFor="inputSellerEmail"
+                            className="form-label"
+                          >
+                            Seller Password
+                          </label>
+                          <input
+                            type="password"
+                            className="form-control"
+                            id="inputSellerPassword"
+                            placeholder="Enter seller password"
+                            name="password"
+                            required
+                            onChange={(e) => {
+                              setPassword(e.target.value);
+                            }}
+                            value={password}
+                          />
+                        </div>
+                        {/* <div className="mb-3">
                           <label
                             htmlFor="inputSellerPhone"
                             className="form-label"
@@ -132,8 +206,8 @@ const AdminAddSeller = () => {
                             }}
                             value={phone}
                           />
-                        </div>
-                        <div className="mb-3">
+                        </div> */}
+                        {/* <div className="mb-3">
                           <label
                             htmlFor="inputSellerAddress"
                             className="form-label"
@@ -152,8 +226,8 @@ const AdminAddSeller = () => {
                             }}
                             value={address}
                           />
-                        </div>
-                        <div className="mb-3">
+                        </div> */}
+                        {/* <div className="mb-3">
                           <label htmlFor>Description</label>
                           <div>
                             <div
@@ -161,12 +235,12 @@ const AdminAddSeller = () => {
                               style={{ height: "200px" }}
                             ></div>
                           </div>
-                        </div>
-                        <label htmlFor="inputSellerProfilePicture">
+                        </div> */}
+                        {/* <label htmlFor="inputSellerProfilePicture">
                           Profile Picture
-                        </label>
+                        </label> */}
                         
-                        <div className="mb-3 border border-3 rounded p-4">
+                        {/* <div className="mb-3 border border-3 rounded p-4">
                           <input
                             type="file"
                             accept="image/*"
@@ -189,14 +263,14 @@ const AdminAddSeller = () => {
                           )}
 
                           
-                        </div>
+                        </div> */}
 
                         <button
                             type="submit"
                             className="btn btn-primary"
                             id="submitBtn"
                           >
-                            Save Seller
+                            Add Seller
                           </button>
                       </div>
                     </div>

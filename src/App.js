@@ -40,6 +40,9 @@ import ManageOrder from "./pages/seller/ManageOrder.jsx";
 import AddBulkProductForm from "./pages/seller/Dashboard/Product/AddBulkProductForm.jsx";
 import ViewOrderDetails from "./pages/seller/ViewOrderDetail.jsx";
 import AdminCoupons from "./pages/admin/Coupon/AdminCoupons.jsx";
+import AdminCouponManage from "./pages/admin/AdminCouponManage.jsx";
+import UpdateCoupon from "./pages/admin/UpdateCoupon.jsx";
+import AdminCouponDetails from "./pages/admin/AdminCouponDetails.jsx";
 
 function App() {
   return (
@@ -83,6 +86,13 @@ function App() {
         <Route path="/admin/create-coupons" element={<AdminCoupons />} />
 
         <Route path="/admin-refund" element={<AdminRefund />} />
+
+        <Route path="/admin-manage-coupons" element={<AdminCouponManage />} />
+
+        <Route path="/admin-update-coupons/:couponcode" element={<UpdateCoupon />} />
+
+        <Route path="/admin-coupons-details/:couponcode" element={<AdminCouponDetails />} />
+
 
         <Route
           path="/admin-update-products/:id"

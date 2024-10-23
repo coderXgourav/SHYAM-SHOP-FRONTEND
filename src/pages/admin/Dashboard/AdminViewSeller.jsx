@@ -1,16 +1,22 @@
+
 import React, { useEffect, useState } from 'react';
+import { message, Popconfirm, Select } from 'antd';
 import AdminFooter from "../../../components/admin/AdminFooter";
 import AdminHeader from "../../../components/admin/AdminHeader";
 import axios from 'axios';
 import Cookies from "js-cookie";
 
+const { Option } = Select;
+
 const AdminViewSeller = () => {
   const [currentPage, setCurrentPage] = useState(1);
-
   const [sellersData, setSellersData] = useState({
     countSeller: 0,
     sellers: []
   });
+  const [approvalStatus, setApprovalStatus] = useState({});
+
+  const token = Cookies.get("adminToken");
 
   useEffect(() => {
     const token = Cookies.get("adminToken");
@@ -21,12 +27,68 @@ const AdminViewSeller = () => {
       },
     })
     .then((response) => {
-      setSellersData(response.data); // Set the entire response data
+      setSellersData(response.data);
     })
     .catch((error) => {
       console.error('Error fetching sellers:', error);
     });
   }, []);
+
+
+
+  // Function to handle seller deletion
+  const deleteSeller = async (sellerId) => {
+    try {
+      const response = await axios.delete(`${process.env.REACT_APP_API_URL}/admin/admin-delete-seller/${sellerId}`,{
+        headers: {
+          'Authorization': `${token}`,
+        },
+      });
+      
+      if (response.data.status) {
+        // Show success message
+        message.success(response.data.message);
+  
+        // Update the sellers array in the state after successful deletion
+        setSellersData((prevData) => ({
+          ...prevData,
+          sellers: prevData.sellers.filter((seller) => seller._id !== sellerId),
+          countSeller: prevData.countSeller - 1 // Decrement the seller count
+        }));
+      } else {
+        message.error(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting seller:", error);
+      message.error('Failed to delete seller');
+    }
+  };
+  
+
+
+  const handleApprovalChange = async (sellerId, value) => {
+    const token = Cookies.get("adminToken");
+
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/admin/approve-seller/${sellerId}`, {
+        status: value
+      }, {
+        headers: {
+          'Authorization': `${token}`,
+        },
+      });
+
+      // Optionally, refetch sellers after approval
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin-get-all-seller`, {
+        headers: {
+          'Authorization': `${token}`,
+        },
+      });
+      setSellersData(response.data);
+    } catch (error) {
+      console.error('Error approving seller:', error);
+    }
+  };
 
   return (
     <>
@@ -63,7 +125,7 @@ const AdminViewSeller = () => {
                   </span>
                 </div>
                 <div className="ms-auto">
-                  <a href="#" className="btn btn-sm btn-primary mt-2 mt-lg-0">
+                  <a href="/admin-add-seller" className="btn btn-sm btn-primary mt-2 mt-lg-0">
                     <i className="bx bxs-plus-square" />
                     Add New Seller
                   </a>
@@ -75,59 +137,68 @@ const AdminViewSeller = () => {
                     <tr>
                       <th>No</th>
                       <th>Seller Id</th>
+                      <th>Date Joined</th>
                       <th>Seller Name</th>
                       <th>Email</th>
-                      <th>Date Joined</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sellersData.sellers.length > 0 ? (
-                      sellersData.sellers.map((seller,index) => (
+                      sellersData.sellers.map((seller, index) => (
                         <tr key={seller._id}>
-                            <td>{(currentPage - 1) * 10 + index + 1}</td>
+                          <td>{(currentPage - 1) * 10 + index + 1}</td>
                           <td>
-                            <div className="d-flex align-items-center">
-                              {/* <div>
-                                <input
-                                  className="form-check-input me-3"
-                                  type="checkbox"
-                                  value=""
-                                  aria-label="..."
-                                />
-                              </div> */}
-                              <div className="ms-2">
-                                <h6 className="mb-0 font-14">{seller._id}</h6>
-                              </div>
-                            </div>
+                            <h6 className="mb-0 font-14">{seller._id}</h6>
                           </td>
+                          <td>{new Date(seller.createdAt).toLocaleDateString()}</td>
                           <td>{seller.seller_name}</td>
                           <td>{seller.seller_email}</td>
-                          <td>{new Date(seller.createdAt).toLocaleDateString()}</td>
                           <td>
                             <div className="d-flex order-actions">
-                              <a href="javascript:void(0);" className="">
+                            <Select
+                                value={seller.isApproved ? "Approved" : "Pending"}
+                                style={{ width: 120 }}
+                                onChange={(value) => handleApprovalChange(seller._id, value)}
+                                disabled={seller.isApproved} // Disable if already approved
+                              >
+                                {seller.isApproved ? (
+                                  <Option value="Approved">Approved</Option>
+                                ) : (
+                                  <>
+                                    <Option value="Pending">Pending</Option>
+                                    <Option value="Approved">Approve</Option>
+                                  </>
+                                )}
+                              </Select>
+
+                              {/* <a href="javascript:void(0);" className="">
                                 <i className="bx bxs-edit"></i>
-                              </a>
-                              <a href="javascript:void(0);" className="ms-3">
+                              </a> */}
+                               <Popconfirm
+                                title="Are you sure you want to delete this seller?"
+                                onConfirm={() => deleteSeller(seller._id)}
+                                okText="Yes"
+                                cancelText="No"
+                              >
+                                  <a href="javascript:void(0);" className="ms-3">
                                 <i className="bx bxs-trash"></i>
-                              </a>
+                              </a> 
+                              </Popconfirm>
+                               
                             </div>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" className="text-center">
+                        <td colSpan="6" className="text-center">
                           No sellers found
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
-                {/* <div className="mt-3"> */}
-                  {/* <p>Total Sellers: {sellersData.countSeller}</p> Display total sellers */}
-                {/* </div> */}
               </div>
             </div>
           </div>

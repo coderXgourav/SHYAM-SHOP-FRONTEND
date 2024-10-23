@@ -292,9 +292,9 @@ const AdminHeader = () => {
                     </a>
                   </li>
                   <li>
-                    <a href="/admin/view-blogs">
+                    <a href="/admin-manage-coupons">
                       <i className="bx bx-radio-circle" />
-                      View Blogs
+                      Manage Coupons
                     </a>
                   </li>
                 </ul>
@@ -444,7 +444,7 @@ const AdminHeader = () => {
                       alt="user avatar"
                     />
                     <div className="user-info">
-                      <p className="user-name mb-0">Gourav</p>
+                      <p className="user-name mb-0">{decodedToken.adminToken.adminName}</p>
                       <p className="designattion mb-0">Admin Portal</p>
                     </div>
                   </a>

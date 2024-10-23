@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 const SellerHeader = () => {
   const loginToken = localStorage.getItem("sellerToken");
   const decoded = loginToken && jwtDecode(loginToken);
-
+  // console.log('decoded', decoded.sellerToken.seller_name)
   useEffect(() => {
     if (!decoded) {
       window.location = "/seller/login";
@@ -297,7 +297,7 @@ const SellerHeader = () => {
                       alt="user avatar"
                     />
                     <div className="user-info">
-                      <p className="user-name mb-0">Gourav</p>
+                      <p className="user-name mb-0">{decoded.sellerToken.seller_name}</p>
                       <p className="designattion mb-0">Seller Portal</p>
                     </div>
                   </a>

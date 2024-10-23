@@ -15,18 +15,21 @@ export const SellerSignup = async (data) => {
   }
 };
 
-export const sellerLogin = async (data) => {
-  const api_url = process.env.REACT_APP_API_URL;
-  try {
-    const response = await axios.post(`${api_url}/seller/login`, { data });
-    if (response.data.status) {
-      localStorage.setItem("sellerToken", response.headers["authorization"]);
-    }
-    return response.data;
-  } catch (error) {
-    return { status: false, title: "Something wrong", icon: "error" };
-  }
-};
+// export const sellerLogin = async (data) => {
+//   const api_url = process.env.REACT_APP_API_URL;
+//   try {
+//     const response = await axios.post(`${api_url}/seller/login`, { data });
+//     console.log('datdfsfsdfa',data)
+//     if (response) {
+//       localStorage.setItem("sellerToken", response.headers["authorization"]);
+//     }
+//     return response.data;
+//   } catch (error) {
+//     return { status: false, title: "Something wrong", icon: "error" };
+//   }
+// };
+
+
 
 export const sellerAddProduct = async (data) => {
   const api_url = process.env.REACT_APP_API_URL;

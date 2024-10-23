@@ -2,6 +2,7 @@ import { useState } from "react";
 import { sellerLogin } from "../../utils/seller/sellerAPI";
 import { toast, ToastContainer } from "react-toastify";
 import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 const Login = () => {
   const [btnStatus, setBtnStatus] = useState(false);
@@ -20,36 +21,59 @@ const Login = () => {
 
   const [rEmail, setRemail] = useState(false);
   const [rPassword, setRpassword] = useState(false);
+  
 
   const sellerLoginHandler = async (event) => {
     setBtnStatus(true);
     event.preventDefault();
-    if (usernameEmail.length > 0) {
-      setRemail(false);
-    } else {
-      setRemail(true);
-    }
-    if (password.length > 0) {
-      setRpassword(false);
-    } else {
-      setRpassword(true);
-    }
+  
+    // Basic validation
     if (!usernameEmail || !password) {
+      if (!usernameEmail) setRemail(true);
+      if (!password) setRpassword(true);
       setBtnStatus(false);
-    } else {
-      const data = { usernameEmail, password };
-      const response = await sellerLogin(data);
+      return;
+    }
+  
+    // Clear previous validation errors
+    setRemail(false);
+    setRpassword(false);
+  
+    const data = { usernameEmail, password };
+  
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/seller/login`, data);
+  
       setBtnStatus(false);
-      toast[response.icon](response.title);
-      console.log(response);
-      if (response.status) {
-        setTimeout(() => {
-          window.location = "/seller/dashboard";
-        }, 2000);
+      console.log('Response:', response.data);
+  
+      if (response.data.status) {
+        const token = response.headers["authorization"]; // Get the token from headers
+        if (token) {
+          toast.success(response.data.title); // Show success message
+          localStorage.setItem("sellerToken", token); // Store the token if it exists
+          setTimeout(() => {
+            window.location = "/seller/dashboard"; // Redirect after successful login
+          }, 2000);
+        } else {
+          toast.error("Login failed: No token received."); // Handle case where no token is returned
+        }
+      } else {
+        toast.error(response.data.title); // Show error message if login fails
       }
+    } catch (error) {
+      setBtnStatus(false);
+      console.error("Unexpected Error:", error); // Log any unexpected errors
+      // Check if the error response contains a custom message from the backend
+    if (error.response && error.response.data && error.response.data.title) {
+      toast.error(error.response.data.title); // Show the backend error message as a toast
+    } else {
+      toast.error("An unexpected error occurred"); // Fallback error message
+    }
     }
   };
-
+  
+  
   return (
     <div className="wrapper">
       <div className="section-authentication-cover">

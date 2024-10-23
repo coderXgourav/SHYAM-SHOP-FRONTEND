@@ -246,7 +246,8 @@ const handleSelectAll = (e) => {
                   </select>
                 </div>
 
-                {formData.discountType !== 'buy1get1' && (
+                {/* {formData.discountType !== 'buy1get1' && (
+
                   <div className="form-group col-md-6 mb-3">
                     <label>Discount Value (%)</label>
                     <input
@@ -261,8 +262,26 @@ const handleSelectAll = (e) => {
                       required
                     />
                   </div>
-                )}
+                )} */}
 
+                {formData.discountType !== 'buy1get1' && formData.discountType !== 'fixedAmount' && (
+                <div className="form-group col-md-6 mb-3">
+                  <label>Discount Value (%)</label>
+                  <input
+                    type="number"
+                    name="discountValue"
+                    className="form-control"
+                    value={formData.discountValue}
+                    onChange={handleChange}
+                    min="1"
+                    max="100"
+                    required
+                  />
+                </div>
+              )}
+
+
+             
                 
 
            
