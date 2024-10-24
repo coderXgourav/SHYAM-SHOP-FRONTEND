@@ -1,8 +1,60 @@
-import React from "react";
+import React, { useEffect } from "react";
 import SellerHeader from "../../../components/seller/SellerHeader";
 import SellerFooter from "../../../components/seller/SellerFooter";
+import axios from "axios";
+import { useState } from "react";
+import LineChart from "./charts/LineChart";
 
 const Dashboard = () => {
+  const token = localStorage.getItem("sellerToken");
+  const [sellersData, setSellersData] = useState([]);
+  const [productData, setProductData] = useState([]);
+
+  console.log('sellerdata',sellersData)
+
+  const getAllProducts = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-all-products`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+      setProductData(res.data.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  const getSellerDertails = async () => {
+    
+    try {
+            // Optionally, refetch sellers after approval
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-single-seller`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          token: `${token}`,
+        },
+      });
+      setSellersData(response.data.data);
+    } catch (error) {
+      console.error('Error approving seller:', error);
+    }
+  };
+  useEffect(() => {
+    getSellerDertails();
+    getAllProducts();
+  }, []);
+
+
+    // Sample earnings data (replace this with actual earnings data from seller)
+    // Use the actual earnings from the API data
+  // const earningsData = sellersData ? sellersData.earnings : 0;
+
+  const earningsData = sellersData ? [0, 0, 0, 0, 0, sellersData.earnings] : [];
+
+
+
   return (
     <>
       <SellerHeader />
@@ -15,7 +67,7 @@ const Dashboard = () => {
                   <div className="d-flex align-items-center">
                     <div>
                       <p className="mb-0 text-secondary">Revenue</p>
-                      <h4 className="my-1">$4805</h4>
+                      <h4 className="my-1">${sellersData?.earnings}</h4>
                       <p className="mb-0 font-13 text-success">
                         <i className="bx bxs-up-arrow align-middle" />
                         $34 Since last week
@@ -71,6 +123,22 @@ const Dashboard = () => {
             </div>
           </div>
           {/*end row*/}
+
+           {/* Line Chart for Earnings */}
+           <div className="row">
+            <div className="col-lg-8">
+              <div className="card radius-10">
+                <div className="card-body">
+                  <h5 className="card-title">Earnings Over Time</h5>
+                  <div className="chart-container">
+                    {/* Pass the actual earnings data to the LineChart component */}
+                    <LineChart earningsData={earningsData} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="row row-cols-1 row-cols-xl-2">
             <div className="col d-flex">
               <div className="card radius-10 w-100">
@@ -342,6 +410,8 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
+
           {/*end row*/}
           {/*end row*/}
           <div className="card radius-10">

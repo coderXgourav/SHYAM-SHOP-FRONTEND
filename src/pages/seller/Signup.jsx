@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./style.css";
 import { SellerSignup } from "../../utils/seller/sellerAPI";
 import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
 
 const Signup = () => {
   const [btnStatus, setBtnStatus] = useState(false);
@@ -19,52 +20,134 @@ const Signup = () => {
   const [rEmail, setRemail] = useState(false);
   const [rPassword, setRpassword] = useState(false);
 
+  // const signupFormHandler = async (event) => {
+  //   event.preventDefault();
+  //   setBtnStatus(true);
+
+  //   if (sellerName.length > 0) {
+  //     setRname(false);
+  //   } else {
+  //     setRname(true);
+  //   }
+
+  //   if (username.length > 0) {
+  //     setRusername(false);
+  //   } else {
+  //     setRusername(true);
+  //   }
+
+  //   if (email.length > 0) {
+  //     setRemail(false);
+  //   } else {
+  //     setRemail(true);
+  //   }
+
+  //   if (password.length > 0) {
+  //     setRpassword(false);
+  //   } else {
+  //     setRpassword(true);
+  //   }
+  //   if (!username || !sellerName || !email || !password) {
+  //     setBtnStatus(false);
+  //   } else {
+  //     const sellerData = { sellerName, username, email, password };
+  //     const result = await SellerSignup(sellerData);
+  //     setBtnStatus(false);
+  //     toast[result.icon](result.title);
+  //     if (result.status === true) {
+  //       setSellerName("");
+  //       setUsername("");
+  //       setEmail("");
+  //       setPassword("");
+  //       setTimeout(() => {
+  //         window.location = "/seller/dashboard";
+  //       }, 2000);
+  //     }
+  //   }
+  // };
+
   const signupFormHandler = async (event) => {
     event.preventDefault();
     setBtnStatus(true);
-
-    if (sellerName.length > 0) {
-      setRname(false);
-    } else {
-      setRname(true);
-    }
-
-    if (username.length > 0) {
-      setRusername(false);
-    } else {
-      setRusername(true);
-    }
-
-    if (email.length > 0) {
-      setRemail(false);
-    } else {
-      setRemail(true);
-    }
-
-    if (password.length > 0) {
-      setRpassword(false);
-    } else {
-      setRpassword(true);
-    }
-    if (!username || !sellerName || !email || !password) {
+  
+    // Form validation
+    const isFormValid = () => {
+      let valid = true;
+      
+      if (sellerName.length === 0) {
+        setRname(true);
+        valid = false;
+      } else {
+        setRname(false);
+      }
+  
+      if (username.length === 0) {
+        setRusername(true);
+        valid = false;
+      } else {
+        setRusername(false);
+      }
+  
+      if (email.length === 0) {
+        setRemail(true);
+        valid = false;
+      } else {
+        setRemail(false);
+      }
+  
+      if (password.length === 0) {
+        setRpassword(true);
+        valid = false;
+      } else {
+        setRpassword(false);
+      }
+  
+      return valid;
+    };
+  
+    // Validate the form
+    if (!isFormValid()) {
       setBtnStatus(false);
-    } else {
-      const sellerData = { sellerName, username, email, password };
-      const result = await SellerSignup(sellerData);
+      return;
+    }
+  
+    const sellerData = { sellerName, username, email, password };
+  
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/seller/register`, sellerData);
+  
       setBtnStatus(false);
-      toast[result.icon](result.title);
-      if (result.status === true) {
+  
+      // Handle success
+      
+      if (response.data.status === true) {
+        // Clear form
         setSellerName("");
         setUsername("");
         setEmail("");
         setPassword("");
+        
+        
+        toast.success(response.data.title);
+        // Redirect after signup
         setTimeout(() => {
-          window.location = "/seller/dashboard";
+          window.location.href = "/seller/dashboard";
         }, 2000);
+      }
+    } catch (error) {
+      setBtnStatus(false);
+  
+      // Error handling
+      console.error("Signup Error:", error);
+  
+      if (error.response && error.response.data && error.response.data.title) {
+        toast.error(error.response.data.title); // Backend-specific error message
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
       }
     }
   };
-
+  
   return (
     <>
       <div className="wrapper">

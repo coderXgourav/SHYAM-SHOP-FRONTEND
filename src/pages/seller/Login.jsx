@@ -48,7 +48,7 @@ const Login = () => {
       console.log('Response:', response.data);
   
       if (response.data.status) {
-        const token = response.headers["authorization"]; // Get the token from headers
+        const token = response?.data?.token; // Get the token from headers
         if (token) {
           toast.success(response.data.title); // Show success message
           localStorage.setItem("sellerToken", token); // Store the token if it exists
