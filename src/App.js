@@ -43,6 +43,8 @@ import AdminCoupons from "./pages/admin/Coupon/AdminCoupons.jsx";
 import AdminCouponManage from "./pages/admin/AdminCouponManage.jsx";
 import UpdateCoupon from "./pages/admin/UpdateCoupon.jsx";
 import AdminCouponDetails from "./pages/admin/AdminCouponDetails.jsx";
+import ManageRefund from "./pages/admin/Refund/ManageRefund.jsx";
+import AccountSetup from "./pages/seller/Banksetup/AccountSetup.jsx";
 
 function App() {
   return (
@@ -58,11 +60,15 @@ function App() {
         <Route path="/seller/request-category" element={<AddCategory />} />
         <Route path="/seller/view-category" element={<ViewCategory />} />
         <Route path="/add-product" element={<AddProduct />} />
+
         <Route path="/view-products" element={<ViewProducts />} />
 
         <Route path="/add-bulk-products" element={<AddBulkProductForm />} />
 
         <Route path="/sellers-orders-details/:orderId" element={<ViewOrderDetails/>} />
+
+        {/* <Route path="/account-setup" element={<AccountSetup />} /> */}
+
 
 
 
@@ -109,6 +115,9 @@ function App() {
         <Route path="/admin/edit-blog/:id" element={<EdtiBlog />} />
         <Route path="/admin/view-blog/:id" element={<ViewSingleBlog />} />
         <Route path="/admin/edit-category/:id" element={<EditCategory />} />
+
+        <Route path="/admin/manage-refund" element={<ManageRefund />} />
+
       </Routes>
     </>
   );

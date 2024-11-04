@@ -4,56 +4,207 @@ import SellerFooter from "../../../components/seller/SellerFooter";
 import axios from "axios";
 import { useState } from "react";
 import LineChart from "./charts/LineChart";
+import { jwtDecode } from "jwt-decode";
+import BarChart from "./charts/BarChart";
+import { Select } from "antd"; // Importing Ant Design Select
+
+const { Option } = Select; // Destructure Option from Select
+
 
 const Dashboard = () => {
-  const token = localStorage.getItem("sellerToken");
   const [sellersData, setSellersData] = useState([]);
   const [productData, setProductData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [allOrders, setAllOrders] = useState([]);
+  const [monthlyEarnings, setMonthlyEarnings] = useState([]);
+  const [labels, setLabels] = useState([]);
+  const [userCount, setUserCount] = useState(0);
+  const [productCount, setProductCount] = useState(0);
 
-  console.log('sellerdata',sellersData)
+  const [totalEarning, setTotalEarning] = useState(null);
+
+  const [totalSellerEarning, setTotalSellerEarning] = useState([]);
+
+  const [productSales, setProductSales] = useState([]);
+
+  const [recentOrders, setRecentOrders] = useState([]);
+
+  const [individualEarnings, setIndividualEarnings] = useState([]);
+  const [individualLabels, setIndividualLabels] = useState([]);
+
+  const [filter, setFilter] = useState("monthly"); // Filter state for monthly or individual earnings
+  const [chartData, setChartData] = useState([]);
+
+  const token = localStorage.getItem("sellerToken");
+  const decodedToken = token && jwtDecode(token); // Decode the token
+  const sellerId = decodedToken.sellerToken._id; // Access the _id
+  console.log("Seller ID:", sellerId);
+  console.log("sellerdata", sellersData);
+
+
+  console.log("totalearning", totalEarning);
+
+  console.log("productSales", productSales);
+  console.log("productData", productData);
+
+  console.log("recentOrders", recentOrders);
+
+  console.log("allorder",allOrders)
+  useEffect(() => {
+    getOrders();
+  }, []);
+
+  const getOrders = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/seller/get-seller-orders?seller_id=${sellerId}`,
+        {
+          headers: {
+            token: `${token}`,
+          },
+        }
+      );
+      setAllOrders(res.data.orders);
+      updateChartData("monthly", res.data.orders); // Set default filter as monthly
+
+       //
+       const filteredOrders = res.data.orders.filter(
+        (order) => order.paymentDetails.payment_status === "succeeded"
+      );
+      setProductSales(filteredOrders);
+
+
+         // calculate 10recent order
+         if (res.data.status) {
+          const sortedOrders = res.data.orders
+            .filter((order) => order.paymentDetails.payment_status !== "failed")
+            .slice(0, 10); // Get only the latest 10 orders
+  
+          setRecentOrders(sortedOrders);
+        }
+  
+
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const calculateMonthlyEarnings = (orders) => {
+    const monthlyEarningsMap = {};
+    orders.forEach((order) => {
+      order.productDetails.forEach((product) => {
+        const orderDate = new Date(order.createdAt);
+        const month = orderDate.toLocaleString("default", { year: "numeric", month: "short" });
+        const earning = product.price * product.quantity;
+
+        monthlyEarningsMap[month] = (monthlyEarningsMap[month] || 0) + earning;
+      });
+    });
+
+    const sortedMonths = Object.keys(monthlyEarningsMap).sort((a, b) => new Date(a) - new Date(b));
+    const sortedEarnings = sortedMonths.map((month) => monthlyEarningsMap[month]);
+
+    return { labels: sortedMonths, data: sortedEarnings };
+  };
+
+  const calculateIndividualEarnings = (orders) => {
+    const labels = [];
+    const data = [];
+
+    orders.forEach((order) => {
+      order.productDetails.forEach((product) => {
+        const orderDate = new Date(order.createdAt).toLocaleDateString();
+        labels.push(orderDate);
+        data.push(product.earnings);
+      });
+    });
+
+    return { labels, data };
+  };
+
+  const updateChartData = (selectedFilter, orders) => {
+    let chartData;
+    if (selectedFilter === "monthly") {
+      chartData = calculateMonthlyEarnings(orders);
+    } else {
+      chartData = calculateIndividualEarnings(orders);
+    }
+    setLabels(chartData.labels);
+    setChartData(chartData.data);
+  };
+
+  const handleFilterChange = (value) => {
+    setFilter(value); // Update filter state with the selected value
+    updateChartData(value, allOrders); // Update chart data based on new filter
+  };
+
+
+
+  const getAllUsers = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/seller/get-all-users`,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            token: `${token}`,
+          },
+        }
+      );
+      setUserCount(res.data.count);
+      console.log("All users:", res.data.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   const getAllProducts = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-all-products`, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          token: `${token}`,
-        },
-      });
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/seller/get-all-products`,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            token: `${token}`,
+          },
+        }
+      );
+      setProductCount(res.data.productscount);
       setProductData(res.data.data);
     } catch (error) {
       console.log(error.message);
     }
-  }
+  };
 
   const getSellerDertails = async () => {
-    
     try {
-            // Optionally, refetch sellers after approval
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/seller/get-single-seller`, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          token: `${token}`,
-        },
-      });
+      // Optionally, refetch sellers after approval
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/seller/get-single-seller`,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            token: `${token}`,
+          },
+        }
+      );
       setSellersData(response.data.data);
+      setTotalEarning(response.data.data.totalEarning)
     } catch (error) {
-      console.error('Error approving seller:', error);
+      console.error("Error approving seller:", error);
     }
   };
   useEffect(() => {
     getSellerDertails();
     getAllProducts();
+    getAllUsers();
   }, []);
 
-
-    // Sample earnings data (replace this with actual earnings data from seller)
-    // Use the actual earnings from the API data
+  // Sample earnings data (replace this with actual earnings data from seller)
+  // Use the actual earnings from the API data
   // const earningsData = sellersData ? sellersData.earnings : 0;
 
   const earningsData = sellersData ? [0, 0, 0, 0, 0, sellersData.earnings] : [];
-
-
 
   return (
     <>
@@ -61,13 +212,13 @@ const Dashboard = () => {
       <div className="page-wrapper">
         <div className="page-content">
           <div className="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
-            <div className="col">
+            <div className="col cardTranslate">
               <div className="card radius-10">
                 <div className="card-body">
                   <div className="d-flex align-items-center">
                     <div>
                       <p className="mb-0 text-secondary">Revenue</p>
-                      <h4 className="my-1">${sellersData?.earnings}</h4>
+                      <h4 className="my-1">${totalEarning}</h4>
                       <p className="mb-0 font-13 text-success">
                         <i className="bx bxs-up-arrow align-middle" />
                         $34 Since last week
@@ -81,13 +232,13 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-            <div className="col">
+            <div className="col cardTranslate">
               <div className="card radius-10">
                 <div className="card-body">
                   <div className="d-flex align-items-center">
                     <div>
                       <p className="mb-0 text-secondary">Total Customers</p>
-                      <h4 className="my-1">8.4K</h4>
+                      <h4 className="my-1">{userCount}</h4>
                       <p className="mb-0 font-13 text-success">
                         <i className="bx bxs-up-arrow align-middle" />
                         14% Since last week
@@ -101,13 +252,13 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-            <div className="col">
+            <div className="col cardTranslate">
               <div className="card radius-10">
                 <div className="card-body">
                   <div className="d-flex align-items-center">
                     <div>
-                      <p className="mb-0 text-secondary">Store Visitors</p>
-                      <h4 className="my-1">59K</h4>
+                      <p className="mb-0 text-secondary">Seller Products</p>
+                      <h4 className="my-1">{productCount}</h4>
                       <p className="mb-0 font-13 text-danger">
                         <i className="bx bxs-down-arrow align-middle" />
                         12.4% Since last week
@@ -124,23 +275,137 @@ const Dashboard = () => {
           </div>
           {/*end row*/}
 
-           {/* Line Chart for Earnings */}
-           <div className="row">
-            <div className="col-lg-8">
-              <div className="card radius-10">
-                <div className="card-body">
-                  <h5 className="card-title">Earnings Over Time</h5>
-                  <div className="chart-container">
+          {/* Line Chart for Earnings */}
+          <div className="row">
+            <div className="col-lg-7">
+              <div className="card radius-10" style={{ height: "58vh" }}>
+                <div className="card-body my-2">
+                 
+            {/* Filter Selection using Ant Design Select */}
+                   {/* Filter Selection using Ant Design Select */}
+                    <div className="filter-container  d-flex my-3">
+                    <h5 className="card-title px-4">Earnings Over Time</h5>
+                      
+                    </div>
+                    <div className="px-4">
+                    <Select
+                        id="earningsFilter"
+                        value={filter}
+                        style={{ width: 200 }} // Set width for the select
+                        onChange={handleFilterChange}
+                        placeholder="Select Earnings View" // Set placeholder here
+                      >
+                        <Option value="monthly">Monthly Earnings</Option>
+                        <Option value="individual">Individual Order Earnings</Option>
+                      </Select>
+                    </div>
+
+                  <div className="chart-container my-5 ">
                     {/* Pass the actual earnings data to the LineChart component */}
-                    <LineChart earningsData={earningsData} />
+                    {/* <LineChart data={monthlyEarnings} labels={labels} /> */}
+
+                    <LineChart data={chartData} labels={labels} />
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col d-flex col-lg-5">
+              <div className="card radius-10 w-100">
+                <div className="card-header border-bottom-0">
+                  <div className="d-flex align-items-center">
+                    <div>
+                      <h5 className="mb-1">Top Products</h5>
+                      <p className="mb-0 font-13 text-secondary">
+                        <i className="bx bxs-calendar" />
+                        in last 30 days revenue
+                      </p>
+                    </div>
+                    <div className="dropdown ms-auto">
+                      <a
+                        className="dropdown-toggle dropdown-toggle-nocaret"
+                        href="#"
+                        data-bs-toggle="dropdown"
+                      >
+                        {" "}
+                        <i className="bx bx-dots-horizontal-rounded font-22 text-option" />
+                      </a>
+                      <ul className="dropdown-menu">
+                        <li>
+                          <a className="dropdown-item" href="javascript:;">
+                            Action
+                          </a>
+                        </li>
+                        <li>
+                          <a className="dropdown-item" href="javascript:;">
+                            Another action
+                          </a>
+                        </li>
+                        <li>
+                          <hr className="dropdown-divider" />
+                        </li>
+                        <li>
+                          <a className="dropdown-item" href="javascript:;">
+                            Something else here
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="product-list p-3 mb-3 "
+                  style={{ maxHeight: "400px", overflow: "auto" }}
+                >
+                  {productSales.map((order) =>
+                    order.productDetails.map((product) => (
+                      <div
+                        key={product.productId}
+                        className="row border mx-0 mb-3 py-2 radius-10 cursor-pointer"
+                      >
+                        <div className="col-sm-6">
+                          <div className="d-flex align-items-center">
+                            <div className="product-img">
+                              <img
+                                src={`${process.env.REACT_APP_API_URL}/upload/${product?.images}`}
+                                alt={product.name}
+                              />
+                            </div>
+                            <div className="ms-2">
+                              <h6 className="mb-1">{product.name}</h6>
+                              <p className="mb-0">
+                                ${product.price.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-sm">
+                          <h6 className="mb-1">
+                            ${(product.price * product.quantity).toFixed(2)}
+                          </h6>
+                          <p className="mb-0">{product.quantity} Sales</p>
+                        </div>
+                        <div className="col-sm">
+                          <div id={`chart-${product.productId}`} />
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="row row-cols-1 row-cols-xl-2">
-            <div className="col d-flex">
+          <div className="row ">
+            <div className="col-lg-7 d-flex">
+              <div className="card radius-10 w-100">
+                <div className="p-4">
+                  <BarChart products={productData} />
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-5 d-flex">
               <div className="card radius-10 w-100">
                 <div className="p-4">
                   <div className="d-flex align-items-center">
@@ -201,220 +466,11 @@ const Dashboard = () => {
                 </ul>
               </div>
             </div>
-            <div className="col d-flex">
-              <div className="card radius-10 w-100">
-                <div className="card-header border-bottom-0">
-                  <div className="d-flex align-items-center">
-                    <div>
-                      <h5 className="mb-1">Top Products</h5>
-                      <p className="mb-0 font-13 text-secondary">
-                        <i className="bx bxs-calendar" />
-                        in last 30 days revenue
-                      </p>
-                    </div>
-                    <div className="dropdown ms-auto">
-                      <a
-                        className="dropdown-toggle dropdown-toggle-nocaret"
-                        href="#"
-                        data-bs-toggle="dropdown"
-                      >
-                        {" "}
-                        <i className="bx bx-dots-horizontal-rounded font-22 text-option" />
-                      </a>
-                      <ul className="dropdown-menu">
-                        <li>
-                          <a className="dropdown-item" href="javascript:;">
-                            Action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="javascript:;">
-                            Another action
-                          </a>
-                        </li>
-                        <li>
-                          <hr className="dropdown-divider" />
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="javascript:;">
-                            Something else here
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div className="product-list p-3 mb-3">
-                  <div className="row border mx-0 mb-3 py-2 radius-10 cursor-pointer">
-                    <div className="col-sm-6">
-                      <div className="d-flex align-items-center">
-                        <div className="product-img">
-                          <img
-                            src="{{ url('assets/images/icons/chair.png') }}"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ms-2">
-                          <h6 className="mb-1">Light Blue Chair</h6>
-                          <p className="mb-0">$240.00</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm">
-                      <h6 className="mb-1">$2140.00</h6>
-                      <p className="mb-0">345 Sales</p>
-                    </div>
-                    <div className="col-sm">
-                      <div id="chart5" />
-                    </div>
-                  </div>
-                  <div className="row border mx-0 mb-3 py-2 radius-10 cursor-pointer">
-                    <div className="col-sm-6">
-                      <div className="d-flex align-items-center">
-                        <div className="product-img">
-                          <img
-                            src="{{ url('assets/images/icons/user-interface.png') }}"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ms-2">
-                          <h6 className="mb-1">Honor Mobile 7x</h6>
-                          <p className="mb-0">$159.00</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm">
-                      <h6 className="mb-1">$3570.00</h6>
-                      <p className="mb-0">148 Sales</p>
-                    </div>
-                    <div className="col-sm">
-                      <div id="chart6" />
-                    </div>
-                  </div>
-                  <div className="row border mx-0 mb-3 py-2 radius-10 cursor-pointer">
-                    <div className="col-sm-6">
-                      <div className="d-flex align-items-center">
-                        <div className="product-img">
-                          <img
-                            src="{{ url('assets/images/icons/watch.png') }}"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ms-2">
-                          <h6 className="mb-1">Hand Watch</h6>
-                          <p className="mb-0">$250.00</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm">
-                      <h6 className="mb-1">$3650.00</h6>
-                      <p className="mb-0">122 Sales</p>
-                    </div>
-                    <div className="col-sm">
-                      <div id="chart7" />
-                    </div>
-                  </div>
-                  <div className="row border mx-0 mb-3 py-2 radius-10 cursor-pointer">
-                    <div className="col-sm-6">
-                      <div className="d-flex align-items-center">
-                        <div className="product-img">
-                          <img
-                            src="{{ url('assets/images/icons/idea.png') }}"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ms-2">
-                          <h6 className="mb-1">Mini Laptop</h6>
-                          <p className="mb-0">$260.00</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm">
-                      <h6 className="mb-1">$6320.00</h6>
-                      <p className="mb-0">452 Sales</p>
-                    </div>
-                    <div className="col-sm">
-                      <div id="chart8" />
-                    </div>
-                  </div>
-                  <div className="row border mx-0 mb-3 py-2 radius-10 cursor-pointer">
-                    <div className="col-sm-6">
-                      <div className="d-flex align-items-center">
-                        <div className="product-img">
-                          <img
-                            src="{{ url('assets/images/icons/tshirt.png') }}"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ms-2">
-                          <h6 className="mb-1">Slim-T-Shirt</h6>
-                          <p className="mb-0">$112.00</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm">
-                      <h6 className="mb-1">$2360.00</h6>
-                      <p className="mb-0">572 Sales</p>
-                    </div>
-                    <div className="col-sm">
-                      <div id="chart9" />
-                    </div>
-                  </div>
-                  <div className="row border mx-0 mb-3 py-2 radius-10 cursor-pointer">
-                    <div className="col-sm-6">
-                      <div className="d-flex align-items-center">
-                        <div className="product-img">
-                          <img
-                            src="{{ url('assets/images/icons/headphones.png') }}"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ms-2">
-                          <h6 className="mb-1">Smart Headphones</h6>
-                          <p className="mb-0">$360.00</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm">
-                      <h6 className="mb-1">$9840.00</h6>
-                      <p className="mb-0">275 Sales</p>
-                    </div>
-                    <div className="col-sm">
-                      <div id="chart10" />
-                    </div>
-                  </div>
-                  <div className="row border mx-0 py-2 radius-10 cursor-pointer">
-                    <div className="col-sm-6">
-                      <div className="d-flex align-items-center">
-                        <div className="product-img">
-                          <img
-                            src="{{ url('assets/images/icons/shoes.png') }}"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ms-2">
-                          <h6 className="mb-1">Green Sports Shoes</h6>
-                          <p className="mb-0">$410.00</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-sm">
-                      <h6 className="mb-1">$3840.00</h6>
-                      <p className="mb-0">265 Sales</p>
-                    </div>
-                    <div className="col-sm">
-                      <div id="chart11" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
-
           {/*end row*/}
           {/*end row*/}
-          <div className="card radius-10">
+          <div className="card radius-10" style={styles.card}>
             <div className="card-body">
               <div className="d-flex align-items-center">
                 <div>
@@ -426,282 +482,92 @@ const Dashboard = () => {
               </div>
               <hr />
               <div className="table-responsive">
-                <table className="table align-middle mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Order id</th>
-                      <th>Product</th>
-                      <th>Customer</th>
-                      <th>Date</th>
-                      <th>Price</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>#897656</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="recent-product-img">
-                            <img
-                              src="{{ url('assets/images/icons/chair.png') }}"
-                              alt=""
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-1 font-14">Light Blue Chair</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Brooklyn Zeo</td>
-                      <td>12 Jul 2020</td>
-                      <td>$64.00</td>
-                      <td>
-                        <div className="d-flex align-items-center text-danger">
-                          {" "}
-                          <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          {" "}
-                          <a href="javascript:;" className="">
-                            <i className="bx bx-cog" />
-                          </a>
-                          <a href="javascript:;" className="ms-4">
-                            <i className="bx bx-down-arrow-alt" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#987549</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="recent-product-img">
-                            <img
-                              src="{{ url('assets/images/icons/shoes.png') }}"
-                              alt=""
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-1 font-14">Green Sport Shoes</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Martin Hughes</td>
-                      <td>14 Jul 2020</td>
-                      <td>$45.00</td>
-                      <td>
-                        <div className="d-flex align-items-center text-primary">
-                          {" "}
-                          <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
-                          <span>Dispatched</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          {" "}
-                          <a href="javascript:;" className="">
-                            <i className="bx bx-cog" />
-                          </a>
-                          <a href="javascript:;" className="ms-4">
-                            <i className="bx bx-down-arrow-alt" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#685749</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="recent-product-img">
-                            <img
-                              src="{{ url('assets/images/icons/headphones.png') }}"
-                              alt=""
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-1 font-14">Red Headphone 07</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Shoan Stephen</td>
-                      <td>15 Jul 2020</td>
-                      <td>$67.00</td>
-                      <td>
-                        <div className="d-flex align-items-center text-success">
-                          {" "}
-                          <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
-                          <span>Completed</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          {" "}
-                          <a href="javascript:;" className="">
-                            <i className="bx bx-cog" />
-                          </a>
-                          <a href="javascript:;" className="ms-4">
-                            <i className="bx bx-down-arrow-alt" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#887459</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="recent-product-img">
-                            <img
-                              src="{{ url('assets/images/icons/idea.png') }}"
-                              alt=""
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-1 font-14">Mini Laptop Device</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Alister Campel</td>
-                      <td>18 Jul 2020</td>
-                      <td>$87.00</td>
-                      <td>
-                        <div className="d-flex align-items-center text-success">
-                          {" "}
-                          <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
-                          <span>Completed</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          {" "}
-                          <a href="javascript:;" className="">
-                            <i className="bx bx-cog" />
-                          </a>
-                          <a href="javascript:;" className="ms-4">
-                            <i className="bx bx-down-arrow-alt" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#335428</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="recent-product-img">
-                            <img
-                              src="{{ url('assets/images/icons/user-interface.png') }}"
-                              alt=""
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-1 font-14">
-                              Purple Mobile Phone
-                            </h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Keate Medona</td>
-                      <td>20 Jul 2020</td>
-                      <td>$75.00</td>
-                      <td>
-                        <div className="d-flex align-items-center text-danger">
-                          {" "}
-                          <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          {" "}
-                          <a href="javascript:;" className="">
-                            <i className="bx bx-cog" />
-                          </a>
-                          <a href="javascript:;" className="ms-4">
-                            <i className="bx bx-down-arrow-alt" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#224578</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="recent-product-img">
-                            <img
-                              src="{{ url('assets/images/icons/watch.png') }}"
-                              alt=""
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-1 font-14">Smart Hand Watch</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Winslet Maya</td>
-                      <td>22 Jul 2020</td>
-                      <td>$80.00</td>
-                      <td>
-                        <div className="d-flex align-items-center text-primary">
-                          {" "}
-                          <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
-                          <span>Dispatched</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          {" "}
-                          <a href="javascript:;" className="">
-                            <i className="bx bx-cog" />
-                          </a>
-                          <a href="javascript:;" className="ms-4">
-                            <i className="bx bx-down-arrow-alt" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#447896</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="recent-product-img">
-                            <img
-                              src="{{ url('assets/images/icons/tshirt.png') }}"
-                              alt=""
-                            />
-                          </div>
-                          <div className="ms-2">
-                            <h6 className="mb-1 font-14">T-Shirt Blue</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Emy Jackson</td>
-                      <td>28 Jul 2020</td>
-                      <td>$96.00</td>
-                      <td>
-                        <div className="d-flex align-items-center text-danger">
-                          {" "}
-                          <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex order-actions">
-                          {" "}
-                          <a href="javascript:;" className="">
-                            <i className="bx bx-cog" />
-                          </a>
-                          <a href="javascript:;" className="ms-4">
-                            <i className="bx bx-down-arrow-alt" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                {loading ? (
+                  <p>Loading...</p>
+                ) : recentOrders.length > 0 ? (
+                  <table className="table align-middle mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Product</th>
+                        <th>User email</th>
+                        <th>Date</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        {/* <th>Action</th> */}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentOrders.map((order) => (
+                        <tr key={order._id}>
+                          <td>{order._id}</td>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div
+                                className="recent-product-img"
+                                style={styles.imageContainer}
+                              >
+                                <img
+                                  src={`${
+                                    process.env.REACT_APP_API_URL
+                                  }/upload/${
+                                    order.productDetails[0]?.images ||
+                                    "default-image.png"
+                                  }`}
+                                  alt="Product"
+                                  style={styles.image}
+                                />
+                              </div>
+                              <div className="ms-2">
+                                <h6 className="mb-1 font-14">
+                                  {order.productDetails[0]?.name || "Unknown"}
+                                </h6>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{order.email}</td>
+                          <td>
+                            {new Date(order.createdAt).toLocaleDateString()}{" "}
+                            {new Date(order.createdAt).toLocaleTimeString()}
+                          </td>
+
+                          <td>
+                            $
+                            {order.productDetails
+                              .reduce(
+                                (total, product) =>
+                                  total + product.price * product.quantity,
+                                0
+                              )
+                              .toFixed(2)}
+                          </td>
+                          <td>
+                            <div
+                              className={`d-flex align-items-center text-${getStatusColor(
+                                order.paymentDetails.payment_status
+                              )}`}
+                            >
+                              <i className="bx bx-radio-circle-marked bx-burst bx-rotate-90 align-middle font-18 me-1" />
+                              <span>{order.paymentDetails.payment_status}</span>
+                            </div>
+                          </td>
+                          {/* <td>
+                            <div className="d-flex order-actions">
+                              <a href="#" className="text-secondary">
+                                <i className="bx bx-cog" />
+                              </a>
+                              <a href="#" className="text-secondary ms-4">
+                                <i className="bx bx-down-arrow-alt" />
+                              </a>
+                            </div>
+                          </td> */}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p>No recent orders found.</p>
+                )}
               </div>
             </div>
           </div>
@@ -710,6 +576,40 @@ const Dashboard = () => {
       <SellerFooter />
     </>
   );
+};
+
+// Utility function to determine color class based on order status
+const getStatusColor = (status) => {
+  switch (status) {
+    case "succeeded":
+      return "success";
+    case "pending":
+      return "danger";
+    case "Dispatched":
+      return "primary";
+    default:
+      return "secondary";
+  }
+};
+
+// Basic styles for components
+const styles = {
+  card: {
+    borderRadius: "10px",
+    marginBottom: "20px",
+    boxShadow: "0px 0px 15px rgba(0,0,0,0.1)",
+  },
+  imageContainer: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "5px",
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
 };
 
 export default Dashboard;

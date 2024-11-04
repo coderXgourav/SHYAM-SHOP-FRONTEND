@@ -1,40 +1,68 @@
-import React from 'react';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import React from "react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-// Register necessary components for chart.js
+// Registering necessary chart components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const LineChart = ({ earningsData }) => {
-  // Chart configuration
+const LineChart = ({ data, labels }) => {
   const chartData = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], // Example month labels
+    labels: labels, // X-axis labels (months or individual dates)
     datasets: [
       {
-        label: 'Earnings',
-        data: earningsData, // Dynamic earnings data from props
-        fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
-      }
-    ]
+        label: "Earnings ($)", // Updated label
+        data: data, // Earnings data for each month or individual order
+        borderColor: "rgba(75, 192, 192, 1)", // Line color
+        backgroundColor: "rgba(75, 192, 192, 0.2)", // Light fill color under the line
+        fill: true, // Fill the area under the line
+        tension: 0.4, // Smooth the line
+        borderWidth: 2, // Border width of the line
+      },
+    ],
   };
 
-  const chartOptions = {
+  const options = {
     responsive: true,
+    maintainAspectRatio: false, // Allow chart to take full height of container
     plugins: {
       legend: {
         display: true,
-        position: 'top',
+        position: "top",
       },
       title: {
         display: true,
-        text: 'Earnings Over Time',
+        text: "Earnings Over Time", // Chart title
+      },
+    },
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Earnings ($)', // Title for the y-axis
+        },
+        ticks: {
+          callback: (value) => `$${value}`, // Format y-axis ticks as dollar values
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Time', // Title for the x-axis
+        },
       },
     },
   };
 
-  return <Line data={chartData} options={chartOptions} />;
+  return <Line data={chartData} options={options} />;
 };
 
 export default LineChart;

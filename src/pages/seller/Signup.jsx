@@ -15,139 +15,134 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [bankName, setBankName] = useState("");
+  const [ifscCode, setIfscCode] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [bankHolderName, setBankHolderName] = useState("");
+
   const [rName, setRname] = useState(false);
   const [rUsername, setRusername] = useState(false);
   const [rEmail, setRemail] = useState(false);
   const [rPassword, setRpassword] = useState(false);
 
+  const [rBank, setRBank] = useState(false);
+
+  
   // const signupFormHandler = async (event) => {
   //   event.preventDefault();
   //   setBtnStatus(true);
-
-  //   if (sellerName.length > 0) {
-  //     setRname(false);
-  //   } else {
-  //     setRname(true);
-  //   }
-
-  //   if (username.length > 0) {
-  //     setRusername(false);
-  //   } else {
-  //     setRusername(true);
-  //   }
-
-  //   if (email.length > 0) {
-  //     setRemail(false);
-  //   } else {
-  //     setRemail(true);
-  //   }
-
-  //   if (password.length > 0) {
-  //     setRpassword(false);
-  //   } else {
-  //     setRpassword(true);
-  //   }
-  //   if (!username || !sellerName || !email || !password) {
+  
+  //   // Form validation
+  //   const isFormValid = () => {
+  //     let valid = true;
+      
+  //     if (sellerName.length === 0) {
+  //       setRname(true);
+  //       valid = false;
+  //     } else {
+  //       setRname(false);
+  //     }
+  
+  //     if (username.length === 0) {
+  //       setRusername(true);
+  //       valid = false;
+  //     } else {
+  //       setRusername(false);
+  //     }
+  
+  //     if (email.length === 0) {
+  //       setRemail(true);
+  //       valid = false;
+  //     } else {
+  //       setRemail(false);
+  //     }
+  
+  //     if (password.length === 0) {
+  //       setRpassword(true);
+  //       valid = false;
+  //     } else {
+  //       setRpassword(false);
+  //     }
+  
+  //     return valid;
+  //   };
+  
+  //   // Validate the form
+  //   if (!isFormValid()) {
   //     setBtnStatus(false);
-  //   } else {
-  //     const sellerData = { sellerName, username, email, password };
-  //     const result = await SellerSignup(sellerData);
+  //     return;
+  //   }
+  
+  //   const sellerData = { sellerName, username, email, password };
+  
+  //   try {
+  //     const response = await axios.post(`${process.env.REACT_APP_API_URL}/seller/register`, sellerData);
+  
   //     setBtnStatus(false);
-  //     toast[result.icon](result.title);
-  //     if (result.status === true) {
+  
+  //     // Handle success
+      
+  //     if (response.data.status === true) {
+  //       // Clear form
   //       setSellerName("");
   //       setUsername("");
   //       setEmail("");
   //       setPassword("");
+        
+        
+  //       toast.success(response.data.title);
+  //       // Redirect after signup
   //       setTimeout(() => {
-  //         window.location = "/seller/dashboard";
+  //         window.location.href = "/seller/dashboard";
   //       }, 2000);
+  //     }
+  //   } catch (error) {
+  //     setBtnStatus(false);
+  
+  //     // Error handling
+  //     console.error("Signup Error:", error);
+  
+  //     if (error.response && error.response.data && error.response.data.title) {
+  //       toast.error(error.response.data.title); // Backend-specific error message
+  //     } else {
+  //       toast.error("An unexpected error occurred. Please try again.");
   //     }
   //   }
   // };
-
   const signupFormHandler = async (event) => {
     event.preventDefault();
     setBtnStatus(true);
   
-    // Form validation
     const isFormValid = () => {
       let valid = true;
-      
-      if (sellerName.length === 0) {
-        setRname(true);
-        valid = false;
-      } else {
-        setRname(false);
-      }
-  
-      if (username.length === 0) {
-        setRusername(true);
-        valid = false;
-      } else {
-        setRusername(false);
-      }
-  
-      if (email.length === 0) {
-        setRemail(true);
-        valid = false;
-      } else {
-        setRemail(false);
-      }
-  
-      if (password.length === 0) {
-        setRpassword(true);
-        valid = false;
-      } else {
-        setRpassword(false);
-      }
-  
+      if (!sellerName) { setRname(true); valid = false; } else { setRname(false); }
+      if (!username) { setRusername(true); valid = false; } else { setRusername(false); }
+      if (!email) { setRemail(true); valid = false; } else { setRemail(false); }
+      if (!password) { setRpassword(true); valid = false; } else { setRpassword(false); }
+      if (!bankName || !ifscCode || !accountNumber || !bankHolderName) { setRBank(true); valid = false; } else { setRBank(false); }
       return valid;
     };
-  
-    // Validate the form
-    if (!isFormValid()) {
-      setBtnStatus(false);
-      return;
-    }
-  
-    const sellerData = { sellerName, username, email, password };
-  
+
+    if (!isFormValid()) { setBtnStatus(false); return; }
+
+    const sellerData = { sellerName, username, email, password, bank_name: bankName, ifsc_code: ifscCode, acc_no: accountNumber, bank_holder_name: bankHolderName };
+
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/seller/register`, sellerData);
-  
       setBtnStatus(false);
-  
-      // Handle success
-      
-      if (response.data.status === true) {
-        // Clear form
-        setSellerName("");
-        setUsername("");
-        setEmail("");
-        setPassword("");
-        
-        
+
+      if (response.data.status) {
+        setSellerName(""); setUsername(""); setEmail(""); setPassword(""); setBankName(""); setIfscCode(""); setAccountNumber(""); setBankHolderName("");
         toast.success(response.data.title);
-        // Redirect after signup
-        setTimeout(() => {
-          window.location.href = "/seller/dashboard";
-        }, 2000);
+        setTimeout(() => { window.location.href = "/seller/login"; }, 2000);
       }
     } catch (error) {
       setBtnStatus(false);
-  
-      // Error handling
       console.error("Signup Error:", error);
-  
-      if (error.response && error.response.data && error.response.data.title) {
-        toast.error(error.response.data.title); // Backend-specific error message
-      } else {
-        toast.error("An unexpected error occurred. Please try again.");
-      }
+      toast.error(error.response?.data?.title || "An unexpected error occurred. Please try again.");
     }
   };
-  
+
   return (
     <>
       <div className="wrapper">
@@ -303,22 +298,93 @@ const Signup = () => {
                               ""
                             )}
                           </div>
-                          {/* <div className="col-12">
-                            <div className="form-check form-switch">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="flexSwitchCheckChecked"
-                                required
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="flexSwitchCheckChecked"
-                              >
-                                I read and agree to Terms &amp; Conditions
-                              </label>
-                            </div>
-                          </div> */}{" "}
+
+                          <h6 className="mb-1 text-center">Bank Details :</h6>
+                          <div className="col-12">
+                            <label
+                              htmlFor="inputBankName"
+                              className="form-label"
+                            >
+                              Bank Name
+                            </label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              id="inputBankName"
+                              placeholder="Enter Bank Name"
+                              required=""
+                              value={bankName}
+                              onChange={(e) => {
+                                setBankName(e.target.value);
+                              }}
+                            />
+                            {rBank && !bankName && <label className="errors">Bank Name Required</label>}
+                          </div>
+
+                          <div className="col-12">
+                            <label
+                              htmlFor="inputIfscCode"
+                              className="form-label"
+                            >
+                              IFSC Code
+                            </label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              id="inputIfscCode"
+                              placeholder="Enter Ifsc Code"
+                              required=""
+                              value={ifscCode}
+                              onChange={(e) => {
+                                setIfscCode(e.target.value);
+                              }}
+                            />
+                          {rBank && !ifscCode && <label className="errors">IFSC Code Required</label>}
+                          </div>
+
+                          <div className="col-12">
+                            <label
+                              htmlFor="inputcardHolderName"
+                              className="form-label"
+                            >
+                              Bank Holder's Name
+                            </label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              id="inputcardHolderName"
+                              placeholder="Enter Bank Holder's Name"
+                              required=""
+                              value={bankHolderName}
+                              onChange={(e) => {
+                                setBankHolderName(e.target.value);
+                              }}
+                            />
+                           {rBank && !bankHolderName && <label className="errors">Account Holder's Name Required</label>}
+                           </div>
+
+                           <div className="col-12">
+                            <label
+                              htmlFor="inputcardno"
+                              className="form-label"
+                            >
+                              Account Number
+                            </label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              id="inputcardno"
+                              placeholder="Account Number"
+                              required=""
+                              value={accountNumber}
+                              onChange={(e) => {
+                                setAccountNumber(e.target.value);
+                              }}
+                            />
+                             {rBank && !accountNumber && <label className="errors">Account Number Required</label>}
+                           </div>
+                         
+
                           <br />
                           <div className="col-12">
                             <div className="d-grid">
@@ -354,42 +420,13 @@ const Signup = () => {
                             <div className="text-center ">
                               <p className="mb-0">
                                 Already have an account?{" "}
-                                <a href="/seller/login">Sign in here</a>
+                                <a href="/seller/login">Log In</a>
                               </p>
                             </div>
                           </div>
                         </form>
                       </div>
-                      {/* <div className="login-separater text-center mb-5">
-                        <span>OR SIGN UP WITH EMAIL</span>
-                        <hr />
-                      </div>
-                      <div className="list-inline contacts-social text-center">
-                        <a
-                          href="javascript:;"
-                          className="list-inline-item bg-facebook text-white border-0 rounded-3"
-                        >
-                          <i className="bx bxl-facebook" />
-                        </a>
-                        <a
-                          href="javascript:;"
-                          className="list-inline-item bg-twitter text-white border-0 rounded-3"
-                        >
-                          <i className="bx bxl-twitter" />
-                        </a>
-                        <a
-                          href="javascript:;"
-                          className="list-inline-item bg-google text-white border-0 rounded-3"
-                        >
-                          <i className="bx bxl-google" />
-                        </a>
-                        <a
-                          href="javascript:;"
-                          className="list-inline-item bg-linkedin text-white border-0 rounded-3"
-                        >
-                          <i className="bx bxl-linkedin" />
-                        </a>
-                      </div> */}
+                     
                     </div>
                   </div>
                 </div>

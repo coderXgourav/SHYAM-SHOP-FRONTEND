@@ -182,11 +182,20 @@ const AdminHeader = () => {
                 <ul>
                   <li>
                     {" "}
+                    <a href="/admin/manage-refund">
+                      <i className="bx bx-radio-circle" />
+                       Manage Refund
+                    </a>
+                  </li>
+                 
+                  <li>
+                    {" "}
                     <a href="/admin-refund">
                       <i className="bx bx-radio-circle" />
                       Add Refund
                     </a>
                   </li>
+
                   <li>
                     {" "}
                     <a href="/view-products">
@@ -444,7 +453,7 @@ const AdminHeader = () => {
                       alt="user avatar"
                     />
                     <div className="user-info">
-                      <p className="user-name mb-0">{decodedToken.adminToken.adminName}</p>
+                      <p className="user-name mb-0">{decodedToken?.adminToken?.adminName}</p>
                       <p className="designattion mb-0">Admin Portal</p>
                     </div>
                   </a>

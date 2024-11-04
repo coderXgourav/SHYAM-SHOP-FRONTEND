@@ -19,7 +19,12 @@ const AddProduct = () => {
   const [subCategory, setSubCategory] = useState("");
 
   const [categoryData, setCategoryData] = useState([]);
+
+  const [isRefundable, setIsRefundable] = useState(false); 
+  
   const token = localStorage.getItem("sellerToken");
+
+  console.log('isRefundable',isRefundable)
 
   // Fetch category data from API
   const getCategoryData = async (page = 1) => {
@@ -67,6 +72,7 @@ const AddProduct = () => {
       formData.append("quantity", quantity);
       formData.append("sub_category", subCategory);
       formData.append("description", desc);
+      formData.append("isRefundable", isRefundable); // Append isRefundable to form data
 
       for (let file of selectedFile) {
         formData.append("image", file);
@@ -82,6 +88,7 @@ const AddProduct = () => {
         setCategory("");
         setSubCategory("");
         setSelectedFiles([]);
+        setIsRefundable(false); // Reset isRefundable if using a checkbox or input
       }
       return message.success("Product Added Successfully");
     }
@@ -322,6 +329,18 @@ useEffect(() => {
                                 </option>
                               )}
                             </select>
+
+                            <div className="form-check form-switch mt-3">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="isRefundableCheckbox"
+                            checked={isRefundable}
+                            onChange={(e) => setIsRefundable(e.target.checked)}
+                          />
+                          <label className="form-check-label" htmlFor="isRefundableCheckbox">Is Refundable</label>
+                        </div>
+                        
                           </div>
                         </div>
                       </div>

@@ -21,6 +21,9 @@ const UpdateProducts = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [singleProduct, setSingleProduct] = useState([]);
 
+  const [isRefundable, setIsRefundable] = useState(false);
+
+
   const [loading, setLoading] = useState(false); // Added loading state
 
   const token = localStorage.getItem("sellerToken");
@@ -67,6 +70,9 @@ const UpdateProducts = () => {
       setQuantity(product.quantity);
       setCategory(product.category_id?._id);
       setSubCategory(product.sub_category_id);
+
+      setIsRefundable(product.isRefundable); // Initialize isRefundable from product data
+
       setPreviews(
         product.images.map(
           (img) => `${process.env.REACT_APP_API_URL}/upload/${img}`
@@ -109,6 +115,8 @@ const UpdateProducts = () => {
     formData.append("description", desc);
     formData.append("category_id", category);
     formData.append("sub_category_id", subCategory);
+
+    formData.append("isRefundable", isRefundable); // Add isRefundable to form data
 
     // Append new images if any
     if (selectedFile.length > 0) {
@@ -425,6 +433,31 @@ const UpdateProducts = () => {
                                   </option>
                                 )}
                               </select>
+
+                              <div className="form-check form-switch mt-3">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="isRefundable"
+                            checked={isRefundable}
+                            onChange={(e) => setIsRefundable(e.target.checked)}
+                          />
+                          <label className="form-check-label" htmlFor="isRefundableCheckbox">Is Refundable</label>
+                        </div>
+
+                              {/* <div className="col-12">
+                              <label className="form-check-label" htmlFor="isRefundable">
+                                Is Refundable?
+                              </label>
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                id="isRefundable"
+                                checked={isRefundable}
+                                onChange={(e) => setIsRefundable(e.target.checked)}
+                              />
+                            </div> */}
+
                             </div>
                           </div>
                         </div>
